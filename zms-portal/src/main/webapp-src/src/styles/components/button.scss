@@ -1,0 +1,64 @@
+.c-operate-button {
+  background: transparent;
+  border: 1px solid #d6d6d6;
+  color: #595959;
+  padding: 5px 10px;
+  margin: 0 5px;
+  border-radius: 3px;
+  cursor: pointer;
+  float: left;
+  position: relative;
+  font-size: 13px;
+  &:focus {
+    outline: none;
+  }
+  &:hover {
+    box-shadow: 0 0 8px #d6d6d65b;
+  }
+  &.is-disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    &:hover {
+      box-shadow: none;
+    }
+  }
+  &.is-loading {
+    cursor: not-allowed;
+    opacity: 0.5;
+    &:hover {
+      box-shadow: none;
+    }
+  }
+}
+
+.c-operate-button--primary {
+  border-color: #409fff;
+  color: #048cff;
+  &:hover {
+    box-shadow: 0 0 8px #048eff56;
+  }
+}
+
+.c-operate-button--success {
+  border-color: #67c23a;
+  color: #67c23a;
+  &:hover {
+    box-shadow: 0 0 8px #67c23a57;
+  }
+}
+
+.c-operate-button--warning {
+  border-color: #e6a23c;
+  color: #e6a23c;
+  &:hover {
+    box-shadow: 0 0 8px #e6a23c59;
+  }
+}
+
+.c-operate-button--danger {
+  border-color: #ff5454;
+  color: #ff5454;
+  &:hover {
+    box-shadow: 0 0 8px #ff54544f;
+  }
+}

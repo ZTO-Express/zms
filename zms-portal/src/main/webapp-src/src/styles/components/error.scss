@@ -1,0 +1,19 @@
+.c-error {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  width: 100%;
+  transform: translateY(-50%);
+  text-align: center;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+
+  .c-error__bg {
+    z-index: -1;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}

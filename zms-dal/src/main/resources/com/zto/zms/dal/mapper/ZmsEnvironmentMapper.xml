@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zto.zms.dal.mapper.ZmsEnvironmentMapper" >
+  <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.ZmsEnvironment" >
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="environment_name" property="environmentName" jdbcType="VARCHAR" />
+    <result column="environment_status" property="environmentStatus" jdbcType="VARCHAR" />
+    <result column="zk_service_id" property="zkServiceId" jdbcType="INTEGER" />
+    <result column="influxdb_service_id" property="influxdbServiceId" jdbcType="INTEGER" />
+    <result column="creator" property="creator" jdbcType="VARCHAR" />
+    <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+    <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP" />
+    <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP" />
+  </resultMap>
+  
+  <sql id="base_param_sql">
+    id,environment_name,environment_status,zk_service_id,influxdb_service_id,creator,modifier,gmt_create,gmt_modified
+  </sql>
+  <insert id="insert" parameterType="com.zto.zms.dal.model.ZmsEnvironment" useGeneratedKeys="true" keyProperty="id">
+    insert into zms_environment (id, environment_name,
+      environment_status, zk_service_id,influxdb_service_id, creator,
+      modifier
+      )
+    values (#{id,jdbcType=BIGINT}, #{environmentName,jdbcType=VARCHAR},
+      #{environmentStatus,jdbcType=VARCHAR}, #{zkServiceId,jdbcType=INTEGER},#{influxdbServiceId,jdbcType=INTEGER},
+      #{creator,jdbcType=VARCHAR},
+      #{modifier,jdbcType=VARCHAR}
+      )
+  </insert>
+
+  <select id="listAll" resultMap="BaseResultMap">
+    select <include refid="base_param_sql"/>
+    from zms_environment
+    order by order_num,id
+  </select>
+
+  <select id="listByIds" resultMap="BaseResultMap">
+    select <include refid="base_param_sql"/>
+    from zms_environment
+    <where>
+    <if test="ids != null">
+      and
+      id in
+      <foreach item="item" index="index" collection="ids"
+               open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+    </where>
+    order by order_num,id
+  </select>
+
+  <select id="listEnableEnv" resultMap="BaseResultMap">
+    select <include refid="base_param_sql"/>
+    from zms_environment
+    where environment_status='ENABLE'
+    order by order_num,id
+  </select>
+
+  <select id="getEnv" resultMap="BaseResultMap">
+    select <include refid="base_param_sql"/>
+    from zms_environment where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <select id="isExistName" resultType="boolean">
+    select count(1)>0
+    from zms_environment
+    where environment_name=#{name}
+  </select>
+
+  <update id="rename">
+    update zms_environment
+    set environment_name=#{environmentName}
+    where id =#{id}
+  </update>
+
+  <select id="isExist" resultType="boolean">
+    select count(1)>0
+    from zms_environment
+    where id=#{id}
+  </select>
+
+  <update id="updateDatabase">
+    update zms_environment
+    set zk_service_id=#{zkServiceId},
+    influxdb_service_id=#{influxdbServiceId},
+    environment_status='ENABLE'
+    where id =#{id}
+  </update>
+
+  <select id="getNameById" resultType="string">
+      select environment_name
+      from zms_environment
+      where id =#{id}
+  </select>
+
+  <select id="getIdByName" resultType="integer">
+      select id
+      from zms_environment
+      where environment_name = #{env}
+  </select>
+</mapper>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zto.zms.dal.mapper.ZmsHostMapper">
+    <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.ZmsHost">
+        <result column="id" property="id" jdbcType="INTEGER"/>
+        <result column="environment_id" property="environmentId" jdbcType="INTEGER"/>
+        <result column="host_ip" property="hostIp" jdbcType="VARCHAR"/>
+        <result column="host_user" property="hostUser" jdbcType="VARCHAR"/>
+        <result column="host_name" property="hostName" jdbcType="VARCHAR"/>
+        <result column="host_status" property="hostStatus" jdbcType="VARCHAR"/>
+        <result column="last_monitor_time" property="lastMonitorTime" jdbcType="TIMESTAMP"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="total_mem" property="totalMem" jdbcType="VARCHAR"/>
+        <result column="cpu_rate" property="cpuRate" jdbcType="VARCHAR"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP"/>
+        <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP"/>
+        <result column="environment_name" property="environmentName" jdbcType="VARCHAR" />
+        <collection property="services" ofType="com.zto.zms.dal.model.ServiceInstance">
+            <id column="instanceId" property="id"/>
+            <result column="host_id" property="hostId"/>
+            <result column="instance_name" property="instanceName" jdbcType="VARCHAR" />
+            <result column="instance_type" property="instanceType" jdbcType="VARCHAR" />
+            <result column="server_type" property="serverType" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.zto.zms.common.ZmsHost">
+    insert into zms_host (environment_id, host_ip,
+      host_user, host_name, host_status, 
+      remark, last_monitor_time,total_mem,cpu_rate
+      )
+    values (#{environmentId,jdbcType=INTEGER}, #{hostIp,jdbcType=VARCHAR},
+      #{hostUser,jdbcType=VARCHAR}, #{hostName,jdbcType=VARCHAR}, #{hostStatus,jdbcType=VARCHAR}, 
+      #{remark,jdbcType=VARCHAR}, current_timestamp, #{totalMem,jdbcType=VARCHAR}, #{cpuRate,jdbcType=VARCHAR}
+      )
+    </insert>
+
+    <update id="updateById" parameterType="com.zto.zms.common.ZmsHost">
+        update zms_host set
+            last_monitor_time= current_timestamp,host_status=#{hostStatus},host_name=#{hostName},
+            total_mem=#{totalMem,jdbcType=VARCHAR},cpu_rate=#{cpuRate,jdbcType=VARCHAR}
+        where id = #{id}
+    </update>
+
+    <select id="countByEnvId" resultType="int">
+    select count(1)
+    from zms_host
+    where environment_id=#{envId}
+    </select>
+
+    <select id="pageHostList" resultMap="BaseResultMap">
+        SELECT host.*,env.environment_name
+        FROM zms_host host
+        left join zms_environment env on host.environment_id=env.id
+        <where>
+        <if test="envId != null and '' != envId ">
+            and
+            host.environment_id = #{envId,jdbcType=INTEGER}
+        </if>
+        <if test="hostIp != null and '' != hostIp  ">
+            and
+            host.host_ip like CONCAT('%',#{hostIp},'%')
+        </if>
+        </where>
+        order by gmt_create DESC
+    </select>
+
+    <select id="queryHostDetail" resultMap="BaseResultMap">
+        SELECT host.*,env.environment_name
+        FROM zms_host host
+        left join zms_environment env on host.environment_id=env.id
+        where host.environment_id = #{envId,jdbcType=INTEGER}
+          and host.id = #{hostId,jdbcType=INTEGER}
+    </select>
+
+    <select id="getEnableIPById" resultType="string">
+        SELECT host_ip
+        FROM zms_host
+        where id =#{id}
+    </select>
+
+    <update id="updateHostEnabledOrDisabled">
+        update zms_host set host_status = #{hoststatus,jdbcType=VARCHAR}
+        <where>
+        <if test="envId != null and '' != envId ">
+            and
+            environment_id = #{envId,jdbcType=INTEGER}
+        </if>
+        <if test="hostIds != null and hostIds.size() > 0 ">
+            and id in
+            <foreach item="item" index="index" collection="hostIds"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        </where>
+    </update>
+
+    <select id="getByEnvIdHostIp" resultMap="BaseResultMap">
+        select id, environment_id, host_ip, host_user, host_name, host_status, remark,last_monitor_time,total_mem,cpu_rate
+        from zms_host
+        where environment_id = #{envId}
+            and host_ip = #{hostIp}
+    </select>
+
+
+  <select id="getHostIpByInstanceId" resultType="string">
+    select zms_host.host_ip
+    from zms_host,service_instance
+    where zms_host.id = service_instance.host_id
+    and service_instance.id = #{instanceId}
+  </select>
+
+    <select id="getByInstanceId" resultMap="BaseResultMap">
+    select zms_host.host_ip,zms_host.environment_id
+    from zms_host,service_instance
+    where zms_host.id = service_instance.host_id
+    and service_instance.id = #{instanceId}
+  </select>
+
+  <select id="listHostInstanceByEnvId" resultMap="BaseResultMap">
+      SELECT host.id, host.host_name, host.host_ip,
+             instance.id instanceId, instance.instance_name, instance.instance_type, ser.server_type
+      FROM zms_host host
+          left join service_instance instance on (host.id = instance.host_id and instance.is_deleted = 0)
+          left join zms_service ser on (instance.service_id = ser.id and ser.is_deleted = 0)
+      where host.environment_id = #{envId,jdbcType=INTEGER}
+          and host.host_status = 'ENABLE'
+  </select>
+
+</mapper>

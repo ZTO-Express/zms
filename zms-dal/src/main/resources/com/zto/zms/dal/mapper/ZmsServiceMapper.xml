@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zto.zms.dal.mapper.ZmsServiceMapper">
+    <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.ZmsServiceEntity">
+        <result column="id" property="id" jdbcType="INTEGER"/>
+        <result column="environment_id" property="environmentId" jdbcType="INTEGER"/>
+        <result column="server_name" property="serverName" jdbcType="VARCHAR"/>
+        <result column="server_type" property="serverType" jdbcType="VARCHAR"/>
+        <result column="server_status" property="serverStatus" jdbcType="VARCHAR"/>
+        <result column="is_deleted" property="isDeleted" jdbcType="SMALLINT" />
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP"/>
+        <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap id="BaseResultDtoMap" type="com.zto.zms.dal.domain.service.ZmsClusterServiceDTO" >
+        <result column="id" property="id" jdbcType="INTEGER" />
+        <result column="environment_id" property="environmentId" jdbcType="INTEGER" />
+        <result column="environment_name" property="environmentName" jdbcType="VARCHAR" />
+        <result column="server_name" property="serverName" jdbcType="VARCHAR" />
+        <result column="server_type" property="serverType" jdbcType="VARCHAR" />
+        <result column="server_status" property="serverStatus" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="base_column_sql">id, environment_id, server_name, server_type, server_status, creator, modifier, gmt_create, gmt_modified</sql>
+
+  <insert id="insert" parameterType="com.zto.zms.dal.model.ZmsServiceEntity" useGeneratedKeys="true" keyProperty="id">
+    insert into zms_service (environment_id, server_name, server_type, server_status, creator, modifier)
+    values (#{environmentId,jdbcType=INTEGER}, #{serverName,jdbcType=VARCHAR}, #{serverType,jdbcType=VARCHAR},
+            #{serverStatus,jdbcType=VARCHAR}, #{creator,jdbcType=VARCHAR}, #{modifier,jdbcType=VARCHAR})
+  </insert>
+
+  <select id="listByEnvId" resultMap="BaseResultMap">
+    select id,environment_id,server_name,server_type,server_status
+    from zms_service
+    where environment_id=#{envId} and is_deleted = 0
+  </select>
+
+  <select id="queryClusters" resultMap="BaseResultDtoMap">
+    select serv.id, serv.server_name, serv.server_type, env.id environment_id, env.environment_name
+    from zms_service serv, zms_environment env
+    where serv.environment_id = env.id
+          and serv.server_type in('KAFKA','ROCKETMQ')
+          and serv.is_deleted = 0
+          and serv.server_status = 'ENABLE'
+          and env.environment_status = 'ENABLE'
+    <if test="envId != null ">
+      and serv.environment_id = #{envId,jdbcType=INTEGER}
+    </if>
+    <if test="envName != null and '' != envName ">
+      and env.environment_name = #{envName,jdbcType=VARCHAR}
+    </if>
+    <if test="serviceId != null ">
+      and serv.id = #{serviceId,jdbcType=INTEGER}
+    </if>
+    <if test="serviceType != null and '' != serviceType ">
+      and serv.server_type = #{serviceType,jdbcType=VARCHAR}
+    </if>
+    <if test="serviceName != null and '' != serviceName ">
+      and serv.server_name = #{serviceName,jdbcType=VARCHAR}
+    </if>
+  </select>
+
+    <select id="queryClustersByKeyWord" resultMap="BaseResultDtoMap">
+        select serv.id, serv.server_name, serv.server_type, env.id environment_id, env.environment_name
+        from zms_service serv, zms_environment env
+        where serv.environment_id = env.id
+        and serv.server_type in('KAFKA','ROCKETMQ')
+        and serv.is_deleted = 0
+        and serv.server_status = 'ENABLE'
+        and env.environment_status = 'ENABLE'
+        <if test="envId != null ">
+            and serv.environment_id = #{envId,jdbcType=INTEGER}
+        </if>
+        <if test="keyWord != null ">
+            and serv.server_name like CONCAT('%',#{keyWord},'%')
+        </if>
+    </select>
+
+    <select id="queryClustersByType" resultMap="BaseResultMap">
+        select serv.id, serv.server_name, serv.server_type, env.environment_name
+        from zms_service serv, zms_environment env
+        where serv.environment_id = env.id
+        and serv.server_status = 'ENABLE'
+        and serv.is_deleted = 0
+        and env.environment_status = 'ENABLE'
+        <if test="envId != null ">
+            and serv.environment_id = #{envId,jdbcType=INTEGER}
+        </if>
+        <if test="serviceTypes != null">
+            and serv.server_type in(
+            <foreach collection="serviceTypes" item="serviceType" separator=",">
+                #{serviceType}
+            </foreach>
+            )
+        </if>
+    </select>
+
+
+  <select id="getById" resultMap="BaseResultMap">
+    select id,environment_id,server_name,server_type,server_status
+    from zms_service
+    where id =#{id}
+  </select>
+
+  <select id="getServiceAndEnvById" resultMap="BaseResultDtoMap">
+    select serv.id, serv.server_name, serv.server_type, serv.environment_id,
+           serv.server_status, env.environment_name
+    from zms_service serv, zms_environment env
+    where serv.environment_id = env.id and serv.id = #{id}
+    and serv.is_deleted = 0
+  </select>
+
+  <select id="queryHostServeList" resultMap="BaseResultMap">
+    SELECT DISTINCT s.* FROM zms_service s INNER JOIN service_instance i ON i.service_id = s.id
+    where i.host_id = #{hostId,jdbcType=INTEGER}
+        and s.environment_id = #{envId,jdbcType=INTEGER}
+        and s.is_deleted = 0
+        and i.is_deleted = 0
+    order by gmt_create DESC
+  </select>
+
+  <select id="listByEnvIdAndType" resultMap="BaseResultMap">
+    select id,server_name,server_type,server_status
+    from zms_service
+    where environment_id=#{envId} and  server_type =#{serverType}
+    and server_status='ENABLE'
+    and is_deleted = 0
+  </select>
+
+  <select id="findByEnvIdAndType" resultMap="BaseResultMap">
+    select distinct s.id, s.server_name
+    from zms_service s, service_process p
+    where p.service_id = s.id
+      and s.environment_id = #{envId}
+      and s.server_type = #{serverType}
+      and s.server_status='ENABLE'
+      and s.is_deleted = 0
+  </select>
+
+    <select id="listByIds" resultMap="BaseResultMap">
+        select
+        <include refid="base_column_sql"/>
+        from zms_service
+        where id in(
+            <foreach collection="serviceIds" item="id" separator=",">
+                #{id}
+            </foreach>
+        )
+    </select>
+
+    <select id="listClustersByServiceIds" resultMap="BaseResultMap">
+        select
+        <include refid="base_column_sql"/>
+        from zms_service
+        where id in(
+        <foreach collection="serviceIds" item="id" separator=",">
+            #{id}
+        </foreach>
+        )
+        and server_status = 'ENABLE' and server_type in('KAFKA','ROCKETMQ')
+    </select>
+
+    <select id="getClusterByEnvIdAndName" resultMap="BaseResultMap">
+        select
+        <include refid="base_column_sql"/>
+        from zms_service
+        where server_name = #{clusterName}
+            and environment_id = #{envId}
+            and server_type in('KAFKA','ROCKETMQ')
+            and is_deleted = 0
+    </select>
+
+    <select id="getByEnvIdAndName" resultMap="BaseResultMap">
+        select
+        <include refid="base_column_sql"/>
+        from zms_service
+        where server_name = #{serverName}
+            and environment_id = #{envId}
+            and is_deleted = 0
+    </select>
+
+    <update id="rename">
+        update zms_service set server_name = #{serverName}
+        where id = #{id}
+    </update>
+
+    <update id="deleteById">
+        update zms_service
+        set is_deleted = 1, server_status = 'DISABLE'
+        where id = #{id}
+    </update>
+
+</mapper>

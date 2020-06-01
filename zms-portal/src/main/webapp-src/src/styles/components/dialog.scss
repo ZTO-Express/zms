@@ -1,0 +1,43 @@
+.c-dialog {
+  font-size: 12px;
+  .el-dialog {
+    width: 580px;
+  }
+  .el-dialog__header {
+    padding: 10px 15px 10px;
+    background: #4db3ff;
+    text-align: center;
+  }
+  .el-dialog__title {
+    color: white;
+    font-size: 16px;
+  }
+  .el-dialog__headerbtn {
+    top: 13px;
+  }
+  .el-dialog__body {
+    font-size: 12px;
+    padding: 30px;
+    .el-form-item {
+      margin-bottom: 13px;
+      .el-form-item__label {
+        font-size: 12px;
+        width: 80px;
+      }
+      .el-form-item__content {
+        .el-input {
+          .el-input__inner {
+            font-size: 12px;
+          }
+        }
+        .el-date-editor--datetime {
+          width: 200px;
+        }
+      }
+    }
+  }
+  .c-dialog__footer {
+    text-align: center;
+    margin-top: 25px;
+  }
+}

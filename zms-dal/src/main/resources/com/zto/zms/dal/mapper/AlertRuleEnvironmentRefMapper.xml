@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zto.zms.dal.mapper.AlertRuleEnvironmentRefMapper" >
+  <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.AlertRuleEnvironmentRef" >
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="alert_rule_id" property="alertRuleId" jdbcType="BIGINT" />
+    <result column="environment_id" property="environmentId" jdbcType="INTEGER" />
+    <result column="creator" property="creator" jdbcType="VARCHAR" />
+    <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+    <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP" />
+    <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <resultMap id="BaseResultDtoMap" type="com.zto.zms.dal.domain.alert.AlertRuleEnvironmentRefDTO" >
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="alert_rule_id" property="alertRuleId" jdbcType="BIGINT" />
+    <result column="environment_id" property="environmentId" jdbcType="INTEGER" />
+    <result column="environment_name" property="environmentName" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <sql id="base_column_sql">id, alert_rule_id, environment_id, creator, modifier, gmt_create, gmt_modified</sql>
+
+  <insert id="insert" parameterType="com.zto.zms.dal.model.AlertRuleEnvironmentRef" >
+    insert into alert_rule_environment_ref (alert_rule_id, environment_id, creator)
+    values (#{alertRuleId,jdbcType=BIGINT}, #{environmentId,jdbcType=INTEGER}, #{creator,jdbcType=VARCHAR})
+  </insert>
+
+  <select id="queryEnvironmentRefByAlertRuleId" parameterType="long" resultMap="BaseResultDtoMap">
+    select ref.id, ref.alert_rule_id, ref.environment_id, env.environment_name
+    from alert_rule_environment_ref ref
+    left join zms_environment env on env.id = ref.environment_id
+    where alert_rule_id = #{alertRuleId,jdbcType=BIGINT}
+  </select>
+
+  <delete id="deleteAlertRuleId" parameterType="long">
+    delete from alert_rule_environment_ref
+    where alert_rule_id = #{alertRuleId,jdbcType=BIGINT}
+  </delete>
+
+</mapper>

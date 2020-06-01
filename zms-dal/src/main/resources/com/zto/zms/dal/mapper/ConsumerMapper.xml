@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zto.zms.dal.mapper.ConsumerMapper">
+    <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.Consumer">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="create_date" jdbcType="TIMESTAMP" property="createDate"/>
+        <result column="applicant" jdbcType="VARCHAR" property="applicant"/>
+        <result column="broadcast" jdbcType="BIT" property="broadcast"/>
+        <result column="domain" jdbcType="VARCHAR" property="domain"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="topic_id" jdbcType="BIGINT" property="topicId"/>
+        <result column="topic_name" jdbcType="VARCHAR" property="topicName"/>
+        <result column="consumer_from" jdbcType="BIT" property="consumerFrom"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="delay_threadhold" jdbcType="BIGINT" property="delayThreadhold"/>
+        <result column="modify_date" jdbcType="TIMESTAMP" property="modifyDate"/>
+        <result column="clusterId" jdbcType="BIGINT" property="clusterId"/>
+        <result column="cluster_name" jdbcType="VARCHAR" property="clusterName"/>
+        <result column="cluster_type" jdbcType="VARCHAR" property="clusterType"/>
+        <result column="memo" jdbcType="VARCHAR" property="memo"/>
+        <result column="update_server" jdbcType="INTEGER" property="needUpdateServer"/>
+        <result column="update_zk" jdbcType="INTEGER" property="needUpdateZk"/>
+        <result column="gated_cluster" jdbcType="BIGINT" property="gatedCluster"/>
+        <result column="gated_ips" jdbcType="VARCHAR" property="gatedIps"/>
+        <result column="envId" property="environmentId"/>
+        <result column="applicant_no" jdbcType="VARCHAR" property="applicantNo"/>
+        <collection property="envs" ofType="com.zto.zms.dal.model.ConsumerEnvironmentRef">
+            <id column="envId" property="environmentId"/>
+            <result column="consumer_id" property="consumerId" />
+            <result column="environment_name" property="environmentName" />
+
+
+        </collection>
+
+    </resultMap>
+
+    <resultMap id="BaseResultMapList" type="com.zto.zms.dal.model.Consumer">
+    <id column="id" jdbcType="BIGINT" property="id"/>
+    <result column="create_date" jdbcType="TIMESTAMP" property="createDate"/>
+    <result column="applicant" jdbcType="VARCHAR" property="applicant"/>
+    <result column="broadcast" jdbcType="BIT" property="broadcast"/>
+    <result column="domain" jdbcType="VARCHAR" property="domain"/>
+    <result column="name" jdbcType="VARCHAR" property="name"/>
+    <result column="topic_id" jdbcType="BIGINT" property="topicId"/>
+    <result column="topic_name" jdbcType="VARCHAR" property="topicName"/>
+    <result column="consumer_from" jdbcType="BIT" property="consumerFrom"/>
+    <result column="status" jdbcType="INTEGER" property="status"/>
+    <result column="delay_threadhold" jdbcType="BIGINT" property="delayThreadhold"/>
+    <result column="modify_date" jdbcType="TIMESTAMP" property="modifyDate"/>
+    <result column="cluster_id" jdbcType="BIGINT" property="clusterId"/>
+    <result column="cluster_name" jdbcType="VARCHAR" property="clusterName"/>
+    <result column="server_type" jdbcType="VARCHAR" property="clusterType"/>
+    <result column="memo" jdbcType="VARCHAR" property="memo"/>
+    <result column="update_server" jdbcType="INTEGER" property="needUpdateServer"/>
+    <result column="update_zk" jdbcType="INTEGER" property="needUpdateZk"/>
+    <result column="gated_cluster" jdbcType="BIGINT" property="gatedCluster"/>
+    <result column="applicant_no" jdbcType="VARCHAR" property="applicantNo"/>
+</resultMap>
+
+
+    <update id="updateByPrimaryKeySelective">
+        UPDATE consumer
+        <set>
+            <if test="createDate != null">
+                create_date = #{createDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="applicant != null">
+                applicant = #{applicant,jdbcType=VARCHAR},
+            </if>
+            <if test="broadcast != null">
+                broadcast = #{broadcast,jdbcType=BIT},
+            </if>
+            <if test="domain != null">
+                `domain` = #{domain,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null">
+                `name` = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="topicId != null">
+                topic_id = #{topicId,jdbcType=BIGINT},
+            </if>
+            <if test="consumerFrom != null">
+                consumer_from = #{consumerFrom,jdbcType=BIT},
+            </if>
+            <if test="status != null">
+                status = #{status,jdbcType=INTEGER},
+            </if>
+            <if test="delayThreadhold != null">
+                delay_threadhold = #{delayThreadhold,jdbcType=BIGINT},
+            </if>
+            <if test="modifyDate != null">
+                modify_date = #{modifyDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="clusterId != null">
+                cluster_id = #{clusterId,jdbcType=BIGINT},
+            </if>
+            <if test="memo != null">
+                memo = #{memo,jdbcType=VARCHAR},
+            </if>
+            <if test="needUpdateServer != null">
+                update_server = #{needUpdateServer,jdbcType=INTEGER},
+            </if>
+            <if test="needUpdateZk != null">
+                update_zk = #{needUpdateZk,jdbcType=INTEGER},
+            </if>
+            <if test="gatedCluster != null">
+                gated_cluster = #{gatedCluster,jdbcType=BIGINT},
+            </if>
+            <if test="gatedIps != null">
+                gated_ips = #{gatedIps,jdbcType=VARCHAR},
+            </if>
+            <if test="applicantNo != null">
+                applicant_no = #{applicantNo,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into consumer
+        (create_date,applicant,broadcast,`domain`,`name`,
+        topic_id,consumer_from,status,delay_threadhold,modify_date,
+        cluster_id,memo,update_server,update_zk,gated_cluster,gated_ips,applicant_no)
+        values (#{createDate},#{applicant},#{broadcast},#{domain},#{name},
+        #{topicId},#{consumerFrom},#{status},#{delayThreadhold},
+        #{modifyDate},#{clusterId},
+        #{memo},#{needUpdateServer},#{needUpdateZk},#{gatedCluster},#{gatedIps},#{applicantNo});
+
+    </insert>
+
+
+    <select id="selectTopicInfoByConsumerName" resultMap="BaseResultMap">
+        SELECT consumer.*,topic.name as topic_name,cluster.name as cluster_name FROM consumer left join cluster on
+        consumer.cluster_id=cluster.id LEFT JOIN topic on consumer.topic_id= topic.id where
+        consumer.name = #{consumerName}
+        and
+        consumer.status >0
+        order by modify_date DESC
+    </select>
+
+    <select id="selectConsumers" resultMap="BaseResultMap">
+        SELECT consumer.*,topic.name as topic_name
+        FROM consumer
+        join consumer_environment_ref ref on consumer.id = ref.consumer_id
+        LEFT JOIN topic on consumer.topic_id= topic.id
+        <if test="serverName !=null and serverName !=''">
+            left join zms_service service on (ref.service_id = service.id and service.is_deleted = 0)
+        </if>
+        <include refid="consumer_base_select"/>
+        <if test="name != null and '' != name  ">
+            and consumer.name like CONCAT('%',#{name},'%')
+        </if>
+        <if test="topicName != null and '' != topicName ">
+            and topic.name like CONCAT('%',#{topicName},'%')
+        </if>
+        and consumer.status <![CDATA[>=]]> 0
+        order by modify_date DESC
+    </select>
+
+    <select id="selectExactConsumers" resultMap="BaseResultMap">
+        SELECT consumer.*,topic.name as topic_name
+        FROM consumer
+        join consumer_environment_ref ref on consumer.id = ref.consumer_id
+        LEFT JOIN topic on consumer.topic_id= topic.id
+        <if test="serverName !=null and serverName !=''">
+            left join zms_service service on (ref.service_id = service.id and service.is_deleted = 0)
+        </if>
+        <include refid="consumer_base_select"/>
+        <if test="name != null and '' != name  ">
+            and consumer.name = #{name,jdbcType=VARCHAR}
+        </if>
+        <if test="topicName != null and '' != topicName ">
+            and topic.name = #{topicName,jdbcType=VARCHAR}
+        </if>
+        and consumer.status <![CDATA[>=]]> 0
+        order by modify_date DESC
+    </select>
+
+    <sql id="consumer_base_select">
+        <where>
+        <if test="envId !=null">
+            and ref.environment_id=#{envId}
+        </if>
+        <if test="serverName !=null and serverName !=''">
+            and service.server_name = #{serverName}
+        </if>
+        <if test="applicant != null and '' != applicant  ">
+            and consumer.applicant = #{applicant,jdbcType=VARCHAR}
+        </if>
+        <if test="domain != null and '' != domain  ">
+            and consumer.domain = #{domain,jdbcType=VARCHAR}
+        </if>
+        <if test="status != null and '-1' != status ">
+            and
+            <if test="0 == status">
+                consumer.status in (0,2)
+            </if>
+            <if test="1 == status">
+                consumer.status in (1,3)
+            </if>
+        </if>
+        </where>
+    </sql>
+    <!-- 新接口 消费组列表-->
+    <select id="selectConsumersByService" resultMap="BaseResultMapList">
+        SELECT distinct consumer.*,topic.name as topic_name,service.server_name as cluster_name,service.server_type,ref.environment_id envId,ref.id id,ref.gated_ips gatedIps,ref.gated_service_id,env.environment_name environmentName
+        FROM consumer
+        left join consumer_environment_ref ref on consumer.id=ref.consumer_id
+        LEFT JOIN zms_service service on (ref.service_id=service.id and service.is_deleted = 0)
+        left join topic on consumer.topic_id= topic.id
+        left join zms_environment env on env.id=ref.environment_id
+        <where>
+        <if test="topicName != null and '' != topicName ">
+            and
+            topic.name = #{topicName,jdbcType=VARCHAR}
+
+        </if>
+        <if test="serviceId != null and '-1' != serviceId and 0 != serviceId">
+            and
+            ref.service_id = #{serviceId,jdbcType=BIGINT}
+
+        </if>
+        <if test="envId != null and '-1' != envId and 0 != envId">
+            and
+            ref.environment_id = #{envId,jdbcType=BIGINT}
+        </if>
+        <if test="applicant != null and '' != applicant  ">
+            and
+            consumer.applicant = #{applicant,jdbcType=VARCHAR}
+
+        </if>
+        <if test="status != null and '-1' != status ">
+            and
+            <if test="0 == status">
+                consumer.status in (0,2)
+            </if>
+            <if test="1 == status">
+                consumer.status in (1,3)
+            </if>
+
+        </if>
+        <if test="name != null and '' != name  ">
+            and
+            consumer.name like CONCAT('%',#{name},'%')
+
+        </if>
+            and  consumer.status <![CDATA[>=]]> 0
+            order by consumer.modify_date DESC
+        </where>
+    </select>
+
+    <select id="selectConsumersByKeyWord" resultMap="BaseResultMapList">
+        SELECT distinct consumer.*,topic.name as topic_name
+        FROM consumer
+        left join consumer_environment_ref ref on consumer.id=ref.consumer_id
+        LEFT JOIN zms_service service on (ref.service_id=service.id and service.is_deleted = 0)
+        left join topic on consumer.topic_id= topic.id
+        left join zms_environment env on env.id=ref.environment_id
+        <where>
+        <if test="id != null and 0 != id">
+            and consumer.id = #{id}
+        </if>
+        <if test="envId != null and '-1' != envId and 0 != envId">
+            and ref.environment_id = #{envId,jdbcType=BIGINT}
+        </if>
+        <if test="serviceId != null and '-1' != serviceId and 0 != serviceId">
+            and ref.service_id = #{serviceId,jdbcType=BIGINT}
+        </if>
+        <if test="name != null and '' != name  ">
+            and consumer.name like CONCAT('%',#{name},'%')
+        </if>
+        <if test="status != null and '-1' != status ">
+            and
+            <if test="0 == status">
+                consumer.status in (0,2)
+            </if>
+            <if test="1 == status">
+                consumer.status in (1,3)
+            </if>
+        </if>
+        <if test="keyWord != null and '' != keyWord  ">
+            and
+            (lower(service.server_name) like CONCAT('%',#{keyWord},'%') or lower(consumer.name) like CONCAT('%',#{keyWord},'%') or lower(topic.name) like CONCAT('%',#{keyWord},'%') or
+            consumer.applicant like CONCAT('%',#{keyWord},'%'))
+        </if>
+        and  consumer.status <![CDATA[>=]]> 0
+        </where>
+        order by consumer.modify_date DESC
+    </select>
+
+    <!-- 新接口 获取该环境下对应消费组名称和集群名称-->
+    <select id="selectConsumerGroupByEnv" resultMap="BaseResultMap">
+        SELECT  consumer.*,topic.name as topic_name,service.server_name as cluster_name,ref.environment_id envId,service.server_type cluster_type,service.id clusterId
+        FROM consumer
+        left join consumer_environment_ref ref on consumer.id=ref.consumer_id
+        LEFT JOIN zms_service service on (ref.service_id = service.id and service.is_deleted = 0)
+        left join topic on consumer.topic_id= topic.id
+        where  consumer.id = #{consumerId,jdbcType=BIGINT}
+        <if test="envId != null and '-1' != envId and 0 != envId">
+            and
+            ref.environment_id = #{envId,jdbcType=BIGINT}
+        </if>
+        order by modify_date DESC
+
+    </select>
+
+    <!-- 新接口 获取该环境下对应消费组名称和集群名称-->
+    <select id="selectConsumerInEnvIds" resultMap="BaseResultMap">
+        SELECT DISTINCT consumer.*,topic.name as topic_name,service.server_name as cluster_name,
+        ref.environment_id envId,ref.consumer_id,
+        service.server_type cluster_type,service.id clusterId
+        FROM consumer
+        left join consumer_environment_ref ref on consumer.id=ref.consumer_id
+        LEFT JOIN zms_service service on (ref.service_id=service.id and service.is_deleted = 0)
+        left join topic on consumer.topic_id= topic.id
+        <where>
+        <if test="envIds != null">
+            and
+            ref.environment_id in
+            <foreach item="item" index="index" collection="envIds"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+
+        <if test="consumerIds != null">
+            and
+            consumer.id in
+            <foreach item="item" index="index" collection="consumerIds"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        order by modify_date DESC
+        </where>
+    </select>
+
+    <select id="selectApprovedConsumers" resultMap="BaseResultMap">
+        SELECT consumer.*,topic.name as topic_name,cluster.name as cluster_name FROM consumer left join cluster on
+        consumer.cluster_id=cluster.id LEFT JOIN topic on consumer.topic_id= topic.id
+
+        where consumer.status >0
+        <if test="clusterId != null ">
+            and
+            consumer.cluster_id = #{clusterId,jdbcType=BIGINT}
+        </if>
+
+        <if test="clusterType != null and '' != clusterType  ">
+            and
+            cluster.cluster_type = #{clusterType,jdbcType=VARCHAR}
+        </if>
+
+        order by modify_date DESC
+    </select>
+
+    <select id="selectApprovedConsumersByService" resultMap="BaseResultMap">
+        SELECT distinct consumer.*,topic.name as topic_name
+        FROM consumer
+        left join consumer_environment_ref ref on consumer.id=ref.consumer_id
+        LEFT JOIN zms_service service on (ref.service_id=service.id and service.is_deleted = 0)
+        left join topic on consumer.topic_id= topic.id
+        where consumer.status >0
+        <if test="clusterId != null and 0!=clusterId">
+            and
+            ref.service_id = #{clusterId,jdbcType=BIGINT}
+        </if>
+        <if test="envId != null and 0!=envId">
+            and
+            ref.environment_id = #{envId}
+        </if>
+        <if test="clusterType != null and '' != clusterType  ">
+            and
+            service.server_type = #{clusterType,jdbcType=VARCHAR}
+        </if>
+        <if test="clusterName != null and '' != clusterName  ">
+            and
+            service.server_name = #{clusterName}
+        </if>
+        <if test="topicId != null and 0 != topicId  ">
+            and
+            consumer.topic_id = #{topicId}
+        </if>
+        <if test="topicName != null and '' != topicName  ">
+            and
+            topic.name = #{topicName}
+        </if>
+        order by modify_date DESC
+    </select>
+
+    <select id="selectMigratedConsumersById" resultMap="BaseResultMap">
+        SELECT consumer.id, consumer.name, consumer.broadcast, ref.service_id clusterId
+        FROM consumer, consumer_environment_ref ref
+        where consumer.id = ref.consumer_id
+          and consumer.status > 0
+          and ref.environment_id = #{envId}
+          and consumer.id in
+            <foreach item="item" index="index" collection="consumersIds"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </select>
+
+    <update id="softDelete">
+        update consumer set status= -2 where id = #{id}
+    </update>
+
+    <update id="updateGatedInfo">
+        update consumer set gated_ips = #{gatedIps,jdbcType=VARCHAR},gated_cluster = #{gatedClusterId,jdbcType=BIGINT}
+        where id=#{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateUpdateServer">
+        update consumer set update_server= 0,update_zk=0 where id = #{id}
+    </update>
+
+    <!-- 根据名称查询，不区分大小写-->
+    <select id="selectConsumerByName" resultMap="BaseResultMap">
+        SELECT t.* FROM consumer t
+        <where>
+        <if test="name != null and name != ''">
+            and lower(t.name) = #{name,jdbcType=VARCHAR}
+        </if>
+
+        <if test="id != null">
+            and t.id <![CDATA[!=]]> #{id,jdbcType=BIGINT}
+        </if>
+        </where>
+    </select>
+
+
+    <!-- 根据名称查询，不区分大小写-->
+    <select id="listConsumerByNames" resultMap="BaseResultMap">
+        SELECT * FROM consumer
+        <where>
+            name in
+            <foreach collection="names" open="(" item="name" separator="," close=")">
+                #{name}
+            </foreach>
+        </where>
+    </select>
+
+    <!-- 根据名称查询，不区分大小写-->
+    <select id="selectConsumerNameAnddDelayhold" resultMap="BaseResultMap">
+        SELECT name,delay_threadhold FROM consumer where consumer.status >0
+    </select>
+
+    <!-- 根据名称查询，不区分大小写-->
+    <select id="selectConsumerByNameAndEnvId" resultMap="BaseResultMap">
+        SELECT DISTINCT t.*,service.server_name cluster_name,service.server_type cluster_type
+        FROM consumer t
+        LEFT JOIN consumer_environment_ref ref on t.id=ref.consumer_id
+        left join zms_service service on (ref.service_id=service.id and service.is_deleted = 0)
+        <where>
+        <if test="name != null and name != ''">
+            and lower(t.name) = #{name,jdbcType=VARCHAR}
+        </if>
+        <if test="envId != null and 0!=envId">
+            and ref.environment_id = #{envId,jdbcType=BIGINT}
+        </if>
+        <if test="clusterType != null and ''!=clusterType">
+            and service.server_type = #{clusterType}
+        </if>
+        </where>
+    </select>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT consumer.* FROM consumer where consumer.id=#{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM consumer
+    </select>
+
+    <select id="selectConsumersByServiceId" resultMap="BaseResultMap">
+        SELECT consumer.id, consumer.name, consumer.broadcast,topic.name topic_name
+        FROM consumer left join topic on consumer.topic_id=topic.id
+        <if test="serviceId != null">
+            left join consumer_environment_ref ref on consumer.id = ref.consumer_id
+        </if>
+        where consumer.status > 0
+            <if test="serviceId != null">
+                and ref.service_id = #{serviceId}
+            </if>
+        order by consumer.modify_date DESC
+    </select>
+
+    <select id="getConsumerByName" resultMap="BaseResultMap">
+        select * from consumer
+        where name =#{name} and status >=0
+    </select>
+
+</mapper>

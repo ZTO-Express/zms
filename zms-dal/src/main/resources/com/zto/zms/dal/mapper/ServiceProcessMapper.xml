@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zto.zms.dal.mapper.ServiceProcessMapper" >
+  <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.ServiceProcess" >
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="service_id" property="serviceId" jdbcType="INTEGER" />
+    <result column="instance_id" property="instanceId" jdbcType="INTEGER" />
+    <result column="running_status" property="runningStatus" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="VARCHAR" />
+    <result column="creator" property="creator" jdbcType="VARCHAR" />
+    <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+    <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP" />
+    <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <resultMap id="BaseResultDtoMap" type="com.zto.zms.common.ServiceProcess" >
+    <result column="service_id" property="serviceId" jdbcType="INTEGER" />
+    <result column="instance_id" property="instanceId" jdbcType="INTEGER" />
+    <result column="service_process_id" property="serviceProcessId" jdbcType="INTEGER" />
+    <result column="last_monitor_time" property="lastMonitorTime" jdbcType="TIMESTAMP" />
+
+  </resultMap>
+
+  <sql id="base_column_sql">id, service_id, instance_id, running_status, status</sql>
+
+  <insert id="insert" parameterType="com.zto.zms.dal.model.ServiceProcess" useGeneratedKeys="true" keyProperty="id">
+    insert into service_process (service_id, instance_id, status, creator, modifier)
+    values (#{serviceId,jdbcType=INTEGER}, #{instanceId,jdbcType=INTEGER}, #{status,jdbcType=VARCHAR},
+            #{creator,jdbcType=VARCHAR}, #{modifier,jdbcType=VARCHAR})
+  </insert>
+
+  <insert id="insertList" parameterType="list" useGeneratedKeys="true" keyProperty="id">
+    insert into service_process (service_id, instance_id, status, creator, modifier)
+    values
+    <foreach collection="list" item="item" separator=",">
+      (#{item.serviceId,jdbcType=INTEGER}, #{item.instanceId,jdbcType=INTEGER}, #{item.status,jdbcType=VARCHAR},
+      #{item.creator,jdbcType=VARCHAR}, #{item.modifier,jdbcType=VARCHAR})
+    </foreach>
+  </insert>
+
+  <select id="listLastSuccessProcessByServiceIds" resultMap="BaseResultDtoMap">
+    select service_process.service_id, service_process.instance_id, max(service_process.id) service_process_id
+    <include refid="success_process_sql"/>
+    and service_process.service_id in
+    <foreach item="item" index="index" collection="serviceIds"
+             open="(" separator="," close=")">
+      #{item}
+    </foreach>
+    group by service_process.service_id, service_process.instance_id
+  </select>
+  <select id="listLastSuccessProcessByServiceIdsAndHost" resultMap="BaseResultDtoMap">
+    select service_process.service_id, service_process.instance_id, max(service_process.id) service_process_id
+    <include refid="success_process_sql"/>
+    and service_instance.host_id=#{hostId}
+    <if test="serviceIds != null and serviceIds.size() > 0">
+    and service_process.service_id in
+    <foreach item="item" index="index" collection="serviceIds"
+             open="(" separator="," close=")">
+      #{item}
+    </foreach>
+    </if>
+    group by service_process.service_id, service_process.instance_id
+  </select>
+
+  <select id="queryLastSuccessProcess" resultMap="BaseResultDtoMap">
+    select service_process.instance_id, max(service_process.id) service_process_id
+    <include refid="success_process_sql"/>
+    and service_process.service_id = #{serviceId}
+    group by service_process.instance_id
+  </select>
+
+  <select id="queryLastRunningProcess" resultMap="BaseResultDtoMap">
+    select service_process.instance_id, max(service_process.id) service_process_id
+    <include refid="success_process_sql"/>
+    and service_process.service_id = #{serviceId}
+    group by service_process.instance_id
+  </select>
+
+  <select id="listLastSuccessProcess" resultType="integer">
+    select max(service_process.id)
+     <include refid="success_process_sql"/>
+    and service_process.service_id = #{serviceId}
+    group by service_process.instance_id
+  </select>
+
+  <sql id="success_process_sql">
+    from service_process,service_instance
+    where
+      service_instance.id = service_process.instance_id
+      and service_instance.is_deleted = 0
+      and service_process.status='SUCCESS'
+  </sql>
+
+  <select id="queryLastRunningProcessByInstanceId" resultType="java.lang.Integer">
+    select service_process.id
+    <include refid="success_process_sql"/>
+    and service_process.instance_id = #{instanceId}
+    and service_process.running_status = 'running'
+  </select>
+
+
+  <select id="queryLastSuccessProcessByInstanceIds" resultType="java.lang.Integer">
+    select max(id) from service_process
+    where service_id = #{serviceId}
+      and instance_id in
+        <foreach collection="instanceIds" open="(" separator="," close=")" item="instanceId">
+        #{instanceId}
+        </foreach>
+      and status='SUCCESS'
+      group by instance_id
+  </select>
+  <select id="getByProcessId"  resultMap="BaseResultDtoMap">
+    select id as service_process_id,service_id,instance_id,last_monitor_time
+    from service_process
+    where id = #{porcessId}
+  </select>
+
+  <select id="getProgramName" resultType="string">
+    select lower(concat(service_process.id,'-',zms_service.server_type,'-',service_instance.instance_type))
+    from service_process,zms_service,service_instance
+    where service_process.service_id= zms_service.id
+    and service_process.instance_id = service_instance.id
+    and service_process.id=#{processId}
+  </select>
+
+  <select id="getProgramType" resultType="string">
+    select lower(concat(zms_service.server_type,'-',service_instance.instance_type))
+    from service_process,zms_service,service_instance
+    where service_process.service_id= zms_service.id
+    and service_process.instance_id = service_instance.id
+    and service_process.id=#{processId}
+  </select>
+
+  <select id="getProgramTypeByInstanceId" resultType="string">
+    select lower(concat(zms_service.server_type,'-',service_instance.instance_type))
+    from zms_service,service_instance
+    where service_instance.service_id= zms_service.id
+    and service_instance.id=#{instanceId}
+  </select>
+
+  <select id="getServiceType" resultType="string">
+    select lower(zms_service.server_type)
+    from service_process,zms_service,service_instance
+    where service_process.service_id= zms_service.id
+    and service_process.instance_id = service_instance.id
+    and service_process.id=#{processId}
+  </select>
+
+  <select id="listLastSuccessProcessByInstance" resultType="integer">
+    select max(id) from service_process
+    where instance_id = #{instanceId}
+    and status in ('SUCCESS','INIT')
+    order by id desc limit 1
+  </select>
+
+
+  <select id="listLastProcessByInstance" resultMap="BaseResultMap">
+    select <include refid="base_column_sql"/>
+    from service_process
+    where instance_id = #{instanceId}
+    order by id desc limit 1
+  </select>
+
+  <select id="listRunningProcessByInstance" resultMap="BaseResultMap">
+    select <include refid="base_column_sql"/>
+    from service_process
+    where instance_id = #{instanceId}
+    order by field(running_status,'RUNNING') desc,id desc limit 1
+  </select>
+
+  <select id="getRunningStatus" resultMap="BaseResultMap">
+    select <include refid="base_column_sql"/>
+    from service_process
+    where id in (
+      <foreach collection="processIds" item="item" separator=",">
+        #{item}
+      </foreach>
+    )
+  </select>
+
+  <update id="updateSuccess">
+    update service_process set status ='SUCCESS'
+    where id = #{processId}
+  </update>
+
+  <update id="updateFailure">
+    update service_process set status ='FAILURE'
+    where id = #{processId}
+  </update>
+
+  <update id="updateRunningStatus" >
+    update service_process set running_status = #{runningStatus},
+    status='SUCCESS',last_monitor_time = current_timestamp
+    where id = #{processId}
+  </update>
+
+  <update id="stopByAdmin" >
+    update service_process set running_status = 'STOPPED'
+    <if test="modifier!=null">
+     ,modifier =#{modifier}
+    </if>
+    where id = #{processId}
+  </update>
+
+  <select id="getEnvironmentName" resultType="string">
+    select zms_environment.environment_name
+    from service_process,zms_service,zms_environment
+    where service_process.service_id= zms_service.id
+    and zms_service.environment_id = zms_environment.id
+    and service_process.id=#{processId}
+  </select>
+
+  <select id="isFirstProcess" resultType="boolean">
+    select count(service_process.id) = 1
+    from service_process,service_instance
+    where service_process.instance_id=#{instanceId}
+    and  service_instance.id = service_process.instance_id
+    and service_instance.is_deleted = 0
+  </select>
+</mapper>
