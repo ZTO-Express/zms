@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zto.zms.dal.mapper.TopicEnvironmentRefMapper" >
+  <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.TopicEnvironmentRef" >
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="topic_id" property="topicId" jdbcType="BIGINT" />
+    <result column="environment_id" property="environmentId" jdbcType="INTEGER" />
+    <result column="service_id" property="serviceId" jdbcType="INTEGER" />
+    <result column="gated_ips" property="gatedIps" jdbcType="VARCHAR" />
+    <result column="gated_service_id" property="gatedServiceId" jdbcType="INTEGER" />
+    <result column="creator" property="creator" jdbcType="VARCHAR" />
+    <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+    <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP" />
+    <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP" />
+    <result column="clusterType" property="clusterType" jdbcType="VARCHAR" />
+    <result column="server_name" property="clusterName" jdbcType="VARCHAR" />
+    <result column="clusterId" property="clusterId" jdbcType="INTEGER" />
+    <result column="topicName" property="topicName" jdbcType="VARCHAR" />
+    <result column="environment_name" property="environmentName" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap id="BaseResultDtoMap" type="com.zto.zms.dal.domain.alert.EnvironmentRefDTO" >
+    <result column="environment_id" property="environmentId" jdbcType="INTEGER" />
+    <result column="environment_name" property="environmentName" jdbcType="VARCHAR" />
+    <result column="service_id" property="serviceId" jdbcType="INTEGER" />
+    <result column="server_name" jdbcType="VARCHAR" property="serverName"/>
+    <result column="server_type" jdbcType="VARCHAR" property="serverType"/>
+  </resultMap>
+
+  <select id="gettopicenvsByName" resultMap="BaseResultDtoMap">
+  select service.id service_id,service.server_name ,service.server_type,ref.environment_id,ref.id id,ref.gated_ips gatedIps,ref.gated_service_id,env.environment_name environmentName
+  FROM topic_environment_ref ref
+  join topic on topic.id=ref.topic_id
+  LEFT JOIN zms_service service on (ref.service_id=service.id and service.is_deleted = 0)
+  left join zms_environment env on env.id=ref.environment_id
+  where topic.name = #{name}
+  order by env.order_num, env.id
+  </select>
+
+  <insert id="insert" parameterType="com.zto.zms.dal.model.TopicEnvironmentRef" useGeneratedKeys="true" keyProperty="id">
+    insert into topic_environment_ref (id, topic_id, environment_id, service_id,gated_ips,gated_service_id
+      ,creator, modifier)
+    values (#{id,jdbcType=INTEGER}, #{topicId,jdbcType=BIGINT}, #{environmentId,jdbcType=INTEGER},#{serviceId,jdbcType=INTEGER},
+      #{gatedIps,jdbcType=VARCHAR}, #{gatedServiceId,jdbcType=INTEGER},#{creator,jdbcType=VARCHAR}, #{modifier,jdbcType=VARCHAR})
+  </insert>
+
+  <select id="listByTopicId" resultMap="BaseResultMap">
+    select ref.id, ref.topic_id, ref.environment_id, ref.service_id, ref.gated_ips, ref.gated_service_id,
+    env.environment_name,topic.name topicName,
+    service.server_name,service.server_type clusterType
+    from
+    topic_environment_ref ref
+    LEFT JOIN topic on topic.id=ref.topic_id
+    LEFT JOIN zms_environment env on ref.environment_id = env.id
+    LEFT JOIN zms_service service on (ref.service_id=service.id and service.is_deleted = 0)
+    where ref.topic_id in (
+    <foreach collection="topicIds" separator="," item="topicId">
+      #{topicId}
+    </foreach>
+    )
+    order by env.order_num,env.id
+  </select>
+
+  <select id="selectTopicAndCluster" resultMap="BaseResultMap">
+    select ref.*,service.server_type clusterType,service.id clusterId,service.server_name,topic.name topicName
+    from topic_environment_ref ref
+    left join zms_service service on (ref.service_id=service.id and service.is_deleted = 0)
+    left join topic on topic.id=ref.topic_id
+    where ref.topic_id = #{id}
+  </select>
+
+  <update id="updateCluster">
+    update topic_environment_ref
+    set service_id=#{serviceId},modifier=#{modifier}
+    where id =#{id}
+  </update>
+
+  <update id="updateGateCluster">
+    update topic_environment_ref
+    set gated_service_id=#{gateClusterId}
+    ,gated_ips =#{gatedIps}
+    ,modifier=#{modifier}
+    where id =#{id}
+  </update>
+
+  <update id="updateMigrateTopics">
+    update topic_environment_ref
+    set service_id = #{targetClusterId}
+    where service_id = #{srcClusterId}
+    and topic_id in
+    <foreach item="item" index="index" collection="topicIds"
+             open="(" separator="," close=")">
+      #{item}
+    </foreach>
+  </update>
+
+
+  <select id="queryEnvironmentRefByTopicName" parameterType="string" resultMap="BaseResultDtoMap">
+    select ref.environment_id, ref.service_id, env.environment_name
+    from topic
+      left join topic_environment_ref ref on topic.id = ref.topic_id
+      left join zms_environment env on env.id = ref.environment_id
+    where topic.name = #{name,jdbcType=VARCHAR}
+      <if test="null != envIds">
+        and env.id in
+        <foreach item="item" index="index" collection="envIds"
+                 open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+    order by env.order_num ,env.id
+  </select>
+
+  <select id="getByEnvIdAndTopicId" resultMap="BaseResultMap">
+    select ref.*,service.server_name,service.server_type clusterType
+    from topic_environment_ref ref
+    inner join zms_service service on (ref.service_id=service.id and service.is_deleted = 0)
+    where ref.environment_id = #{environmentId}
+    and ref.topic_id =#{topicId}
+  </select>
+
+  <select id="getByEnvIdAndTopicName" resultType="string">
+    select service.server_name
+    from topic, topic_environment_ref ref, zms_service service
+    where topic.id = ref.topic_id
+        and ref.service_id=service.id and service.is_deleted = 0
+        and ref.environment_id = #{environmentId}
+        and topic.name =#{topicName}
+  </select>
+
+  <delete id="deleteByTopicId" parameterType="long">
+    delete from topic_environment_ref
+    where topic_id = #{topicId}
+  </delete>
+
+</mapper>

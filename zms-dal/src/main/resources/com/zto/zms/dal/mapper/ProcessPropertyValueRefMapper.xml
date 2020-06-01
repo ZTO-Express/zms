@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zto.zms.dal.mapper.ProcessPropertyValueRefMapper" >
+  <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.ProcessPropertyValueRef" >
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="service_id" property="serviceId" jdbcType="INTEGER"/>
+    <result column="instance_id" property="instanceId" jdbcType="INTEGER"/>
+    <result column="service_process_id" property="serviceProcessId" jdbcType="INTEGER" />
+    <result column="property_id" property="propertyId" jdbcType="INTEGER" />
+    <result column="property_value_id" property="propertyValueId" jdbcType="INTEGER" />
+    <result column="current_value" property="currentValue" jdbcType="VARCHAR" />
+    <result column="real_value" property="realValue" jdbcType="VARCHAR" />
+    <result column="service_type" property="serviceType" jdbcType="VARCHAR" />
+    <result column="instance_type" property="instanceType" jdbcType="VARCHAR" />
+    <result column="value_type" property="valueType" jdbcType="VARCHAR" />
+    <result column="property_name" property="propertyName" jdbcType="VARCHAR" />
+    <result column="conf_api_key" property="confApiKey" jdbcType="VARCHAR" />
+    <result column="property_group" property="propertyGroup" jdbcType="VARCHAR"/>
+    <result column="creator" property="creator" jdbcType="VARCHAR" />
+    <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+    <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP" />
+    <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <resultMap id="BaseHostResultMap" type="com.zto.zms.dal.model.ServiceInstance" >
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="service_id" property="serviceId" jdbcType="INTEGER" />
+    <result column="host_id" property="hostId" jdbcType="INTEGER" />
+  </resultMap>
+
+  <sql id="base_column_sql">
+    id, service_id,instance_id,service_process_id, property_id,property_value_id, current_value, real_value,service_type,instance_type,property_name,conf_api_key,property_group
+  </sql>
+
+  <insert id="insert" parameterType="com.zto.zms.dal.model.ProcessPropertyValueRef" >
+    insert into process_property_value_ref (service_id,instance_id,service_process_id, property_id,
+      property_value_id, current_value, real_value, creator, modifier)
+    values (#{serviceId,jdbcType=INTEGER},#{instanceId,jdbcType=INTEGER}, #{serviceProcessId,jdbcType=INTEGER}, #{propertyId,jdbcType=INTEGER},
+      #{propertyValueId,jdbcType=INTEGER}, #{currentValue,jdbcType=VARCHAR}, #{realValue,jdbcType=VARCHAR},
+      #{creator,jdbcType=VARCHAR}, #{modifier,jdbcType=VARCHAR})
+  </insert>
+
+  <insert id="insertList" parameterType="list" >
+    insert into process_property_value_ref (service_id,instance_id,service_process_id, property_id,
+      property_value_id, current_value, real_value, service_type, instance_type, property_name,
+      property_group, conf_api_key, creator, modifier)
+    values
+    <foreach collection="list" item="item" separator=",">
+       (#{item.serviceId,jdbcType=INTEGER},#{item.instanceId,jdbcType=INTEGER}, #{item.serviceProcessId,jdbcType=INTEGER},
+       #{item.propertyId,jdbcType=INTEGER}, #{item.propertyValueId,jdbcType=INTEGER}, #{item.currentValue,jdbcType=VARCHAR},
+       #{item.realValue,jdbcType=VARCHAR}, #{item.serviceType,jdbcType=VARCHAR}, #{item.instanceType,jdbcType=VARCHAR},
+       #{item.propertyName,jdbcType=VARCHAR}, #{item.propertyGroup,jdbcType=VARCHAR}, #{item.confApiKey,jdbcType=VARCHAR},
+       #{item.creator,jdbcType=VARCHAR}, #{item.modifier,jdbcType=VARCHAR})
+    </foreach>
+  </insert>
+
+  <select id="listByProcessId" resultMap= "BaseResultMap">
+    select
+        <include refid="base_column_sql"/>
+    from process_property_value_ref
+    where service_process_id
+    in(<foreach collection="processIds" item="processId" separator=",">
+        #{processId}
+        </foreach>
+     )
+    and property_id =#{servicePropertyId}
+  </select>
+
+  <select id="listByProcessIdAndPropertyId" resultMap= "BaseResultMap">
+    select
+        <include refid="base_column_sql"/>
+    from process_property_value_ref
+    where service_process_id in
+        <foreach collection="processIds" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    and property_id in
+        <foreach collection="propertyIds" item="item" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+  </select>
+
+  <select id="listByServiceProcessId" parameterType="integer" resultMap= "BaseResultMap">
+    select
+    <include refid="base_column_sql"/>
+    from process_property_value_ref
+    where service_process_id = #{serviceProcessId,jdbcType=INTEGER}
+    order by property_id, property_value_id
+  </select>
+
+  <select id="listValueTypeByServiceProcessId" parameterType="integer" resultMap= "BaseResultMap">
+    select pro.*,ser.value_type value_type
+    from process_property_value_ref pro left join service_property ser on pro.property_id = ser.id
+    where service_process_id = #{serviceProcessId,jdbcType=INTEGER}
+    order by property_id, property_value_id
+  </select>
+
+  <select id="getProcessPropertyValueRef" resultMap= "BaseResultMap">
+    select
+    <include refid="base_column_sql"/>
+    from process_property_value_ref
+    where service_process_id = #{serviceProcessId,jdbcType=INTEGER}
+        and property_id =#{propertyId,jdbcType=INTEGER}
+  </select>
+  
+  
+  <select id="listByProcessIdAndApiKey" resultMap= "BaseResultMap">
+    select
+        distinct ref.property_name,ref.real_value,ref.conf_api_key
+    from process_property_value_ref ref,config_api api
+    where
+    api.api_key = ref.conf_api_key
+    and ref.service_process_id = #{serviceProcessId}
+    and api.config_scope = #{configScope}
+  </select>
+
+  <select id="listByProcessIdName" resultMap="BaseResultMap">
+    select
+    <include refid="base_column_sql"/>
+    from process_property_value_ref
+    where service_process_id = #{processId}
+    <if test="propertyName!=null and propertyName!=''">
+      and property_name = #{propertyName}
+    </if>
+
+  </select>
+
+  <select id="listRunningService" resultType="string">
+    select distinct service.server_name from process_property_value_ref ref, service_process process, zms_service service
+    where ref.service_process_id = process.id
+      and process.service_id = service.id
+      and process.running_status = 'RUNNING'
+      and ref.property_id in
+          <foreach collection="propertyIds" item="item" open="(" separator="," close=")">
+            #{item}
+          </foreach>
+      and ref.current_value = #{serviceId}
+  </select>
+
+  <select id="listRunningServiceByProcessId" resultMap="BaseHostResultMap">
+    select distinct instance.service_id,instance.host_id from service_instance instance where instance.host_id=(select distinct instance.host_id
+    from process_property_value_ref ref, service_instance instance
+    where ref.instance_id = instance.id
+    and instance.instance_status = 'START'
+    and ref.service_process_id = #{processId})
+  </select>
+
+</mapper>

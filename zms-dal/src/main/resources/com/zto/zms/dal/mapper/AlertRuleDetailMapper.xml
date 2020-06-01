@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zto.zms.dal.mapper.AlertRuleDetailMapper">
+    <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.AlertRuleConfig">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="create_date" jdbcType="TIMESTAMP" property="createDate"/>
+        <result column="modify_date" jdbcType="TIMESTAMP" property="modifyDate"/>
+        <result column="field" jdbcType="VARCHAR" property="field"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="operator" jdbcType="VARCHAR" property="operator"/>
+        <result column="target" jdbcType="INTEGER" property="target"/>
+        <result column="scope" jdbcType="VARCHAR" property="scope"/>
+        <result column="trigger_times" jdbcType="INTEGER" property="triggerTimes"/>
+        <result column="trigger_operator" jdbcType="VARCHAR" property="triggerOperator"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="influx_sql" jdbcType="VARCHAR" property="influxSql"/>
+        <result column="cluster" jdbcType="VARCHAR" property="cluster"/>
+        <result column="alert_user" jdbcType="VARCHAR" property="alertUser"/>
+        <result column="alert_mobile" jdbcType="VARCHAR" property="alertMobile"/>
+        <result column="alert_email" jdbcType="VARCHAR" property="alertEmail"/>
+        <result column="alert_dingding" jdbcType="VARCHAR" property="alertDingding"/>
+        <result column="effect" jdbcType="BIT" property="effect"/>
+        <result column="effect_from" jdbcType="VARCHAR" property="effectFrom"/>
+        <result column="effect_to" jdbcType="VARCHAR" property="effectTo"/>
+        <result column="alert_user_no" jdbcType="VARCHAR" property="alertUserNo"/>
+    </resultMap>
+
+    <select id="selectEffectAlertRulesByEnvId" resultMap="BaseResultMap">
+        SELECT rule.* from alert_rule rule, alert_rule_environment_ref ref
+        where rule.effect = 1 and rule.id = ref.alert_rule_id
+        and ref.environment_id = #{envId,jdbcType=INTEGER}
+    </select>
+
+    <insert id="insert" parameterType="com.zto.zms.dal.model.AlertRuleConfig" useGeneratedKeys="true" keyProperty="id">
+        insert into alert_rule (
+          field, name, type,
+          operator, target, scope,
+          trigger_times, description, influx_sql,
+          trigger_operator, alert_user,
+          alert_email, alert_mobile, alert_dingding,
+          effect, effect_from, effect_to,alert_user_no
+          )
+        values (
+          #{field,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR},
+          #{operator,jdbcType=VARCHAR}, #{target,jdbcType=INTEGER}, #{scope,jdbcType=VARCHAR},
+          #{triggerTimes,jdbcType=INTEGER}, #{description,jdbcType=VARCHAR}, #{influxSql,jdbcType=VARCHAR},
+          #{triggerOperator,jdbcType=VARCHAR}, #{alertUser,jdbcType=VARCHAR},
+          #{alertEmail,jdbcType=VARCHAR}, #{alertMobile,jdbcType=VARCHAR}, #{alertDingding,jdbcType=VARCHAR},
+          #{effect,jdbcType=BIT}, #{effectFrom,jdbcType=VARCHAR}, #{effectTo,jdbcType=VARCHAR},#{alertUserNo,jdbcType=VARCHAR}
+          )
+    </insert>
+    <update id="updateById" parameterType="com.zto.zms.dal.model.AlertRuleConfig">
+      UPDATE alert_rule SET
+          field = #{field,jdbcType=VARCHAR},
+          `name` = #{name,jdbcType=VARCHAR},
+          `type` = #{type,jdbcType=VARCHAR},
+          operator = #{operator,jdbcType=VARCHAR},
+          target = #{target,jdbcType=INTEGER},
+          scope = #{scope,jdbcType=VARCHAR},
+          trigger_times = #{triggerTimes,jdbcType=INTEGER},
+          description = #{description,jdbcType=VARCHAR},
+          influx_sql = #{influxSql,jdbcType=VARCHAR},
+          trigger_operator = #{triggerOperator,jdbcType=VARCHAR},
+          alert_user = #{alertUser,jdbcType=VARCHAR},
+          alert_email = #{alertEmail,jdbcType=VARCHAR},
+          alert_mobile = #{alertMobile,jdbcType=VARCHAR},
+          alert_dingding = #{alertDingding,jdbcType=VARCHAR},
+          effect = #{effect,jdbcType=BIT},
+          effect_from = #{effectFrom,jdbcType=VARCHAR},
+          effect_to = #{effectTo,jdbcType=VARCHAR}
+          <if test="alertUserNo != null and alertUserNo != ''">
+              ,alert_user_no = #{alertUserNo,jdbcType=VARCHAR}
+          </if>
+      WHERE id = #{id}
+    </update>
+    <delete id="deleteByPrimaryKey">
+        DELETE FROM alert_rule WHERE id = #{id}
+    </delete>
+
+    <select id="queryAlertRules" resultMap="BaseResultMap">
+        SELECT * from alert_rule
+        <where>
+        <if test="type != null and '' != type ">
+            and
+            type = #{type,jdbcType=VARCHAR}
+        </if>
+        <if test="name != null and '' != name  ">
+            and
+            name= #{name,jdbcType=VARCHAR}
+        </if>
+        <if test="field != null and '' != field  ">
+            and
+            field= #{field,jdbcType=VARCHAR}
+        </if>
+        </where>
+        order by modify_date DESC
+    </select>
+
+    <select id="countAlertUserRules" resultType="java.lang.Integer">
+        SELECT count(*) from alert_rule
+        <where>
+        <if test="keyWord != null and '' != keyWord  ">
+            (name like CONCAT('%',#{keyWord},'%') or type like CONCAT('%',#{keyWord},'%') or alert_user like CONCAT('%',#{keyWord},'%'))
+        </if>
+        </where>
+    </select>
+
+    <select id="queryAlertUserRulesPage" resultMap="BaseResultMap">
+        SELECT * from alert_rule
+        <where>
+        <if test="keyWord != null and '' != keyWord  ">
+            and (name like CONCAT('%',#{keyWord},'%') or type like CONCAT('%',#{keyWord},'%') or alert_user like CONCAT('%',#{keyWord},'%'))
+        </if>
+        </where>
+        order by modify_date DESC
+        limit #{offset},#{pageSize}
+    </select>
+
+    <select id="queryAlertUserRuleNames" resultType="string">
+        SELECT name from alert_rule
+        order by modify_date DESC
+    </select>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+      SELECT * FROM alert_rule WHERE  id = #{id}
+    </select>
+
+    <select id="uniqueCheck" resultType="integer">
+        SELECT count(*) from alert_rule
+        <where>
+        <if test="type != null and '' != type ">
+            lower(type) = #{type,jdbcType=VARCHAR}
+        </if>
+        <if test="name != null and '' != name  ">
+            and
+            lower(name)= #{name,jdbcType=VARCHAR}
+        </if>
+        <if test="field != null and '' != field  ">
+            and
+            lower(field)= #{field,jdbcType=VARCHAR}
+        </if>
+        <if test="id != null">
+            and
+            id <![CDATA[!=]]> #{id,jdbcType=BIGINT}
+        </if>
+        </where>
+    </select>
+
+    <select id="listByTopic" resultMap="BaseResultMap">
+         SELECT * from alert_rule
+        where type='topic' and name=#{topicName}
+    </select>
+
+</mapper>

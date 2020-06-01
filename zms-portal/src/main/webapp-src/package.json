@@ -1,0 +1,92 @@
+{
+  "name": "vue-mis-basis",
+  "version": "5.0.0-beta.1",
+  "private": true,
+  "scripts": {
+    "dev": "cross-env NODE_ENV=develop && npm run serve",
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "deploy": "npm i --unsafe-perm && npm run build",
+    "analyzer": "cross-env use_analyzer=true npm run build",
+    "memory": "node --max_old_space_size=1024 node_modules/@vue/cli-service/bin/vue-cli-service.js serve --open"
+  },
+  "dependencies": {
+    "axios": "0.19.0",
+    "core-js": "3.4.2",
+    "echarts": "^4.1.0",
+    "element-ui": "^2.13.1",
+    "font-awesome": "4.7.0",
+    "js-cookie": "2.2.1",
+    "lodash": "^4.17.11",
+    "moment": "^2.24.0",
+    "nprogress": "0.2.0",
+    "throttle-debounce": "2.1.0",
+    "vue": "2.6.10",
+    "vue-router": "3.1.3",
+    "vuex": "3.1.2"
+  },
+  "devDependencies": {
+    "@babel/register": "7.7.4",
+    "@vue/cli-plugin-babel": "4.0.5",
+    "@vue/cli-plugin-eslint": "4.0.5",
+    "@vue/cli-plugin-router": "4.0.5",
+    "@vue/cli-plugin-vuex": "4.0.5",
+    "@vue/cli-service": "4.0.5",
+    "@vue/eslint-config-prettier": "5.1.0",
+    "babel-eslint": "10.0.3",
+    "compression-webpack-plugin": "3.0.0",
+    "cross-env": "6.0.3",
+    "eslint": "5.16.0",
+    "eslint-plugin-html": "6.0.0",
+    "eslint-plugin-prettier": "3.1.1",
+    "eslint-plugin-vue": "5.2.3",
+    "lint-staged": "8.2.1",
+    "mockjs": "1.1.0",
+    "node-sass": "4.9.4",
+    "prettier": "1.19.1",
+    "sass-loader": "8.0.0",
+    "speed-measure-webpack-plugin": "1.3.1",
+    "vue-template-compiler": "2.6.10",
+    "webpack-bundle-analyzer": "3.6.0",
+    "@babel/plugin-transform-modules-amd": "^7.9.0"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "@vue/prettier"
+    ],
+    "rules": {},
+    "parserOptions": {
+      "parser": "babel-eslint"
+    },
+    "overrides": [
+      {
+        "files": [
+          "**/__tests__/*.{j,t}s?(x)",
+          "**/tests/unit/**/*.spec.{j,t}s?(x)"
+        ]
+      }
+    ]
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ],
+  "prettier": {
+    "singleQuote": true,
+    "semi": false,
+    "eslintIntegration": true,
+    "printWidth": 120,
+    "endOfLine": "auto"
+  }
+}

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zto.zms.dal.mapper.ServicePropertyValueRefMapper">
+    <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.ServicePropertyValueRef">
+        <result column="id" property="id" jdbcType="INTEGER"/>
+        <result column="service_id" property="serviceId" jdbcType="INTEGER"/>
+        <result column="instance_id" property="instanceId" jdbcType="INTEGER"/>
+        <result column="property_id" property="propertyId" jdbcType="INTEGER"/>
+        <result column="property_value_id" property="propertyValueId" jdbcType="INTEGER"/>
+        <result column="current_value" property="currentValue" jdbcType="VARCHAR"/>
+        <result column="started_value" property="startedValue" jdbcType="VARCHAR"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP"/>
+        <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap id="BaseResultDtoMap" type="com.zto.zms.dal.domain.service.ServicePropertyValueRefDTO">
+        <result column="id" property="id" jdbcType="INTEGER"/>
+        <result column="service_id" property="serviceId" jdbcType="INTEGER"/>
+        <result column="instance_id" property="instanceId" jdbcType="INTEGER"/>
+        <result column="property_id" property="propertyId" jdbcType="INTEGER"/>
+        <result column="property_value_id" property="propertyValueId" jdbcType="INTEGER"/>
+        <result column="current_value" property="currentValue" jdbcType="VARCHAR"/>
+        <result column="started_value" property="startedValue" jdbcType="VARCHAR"/>
+        <result column="service_type" property="serviceType" jdbcType="VARCHAR" />
+        <result column="instance_type" property="instanceType" jdbcType="VARCHAR" />
+        <result column="property_name" property="propertyName" jdbcType="VARCHAR" />
+        <result column="property_group" property="propertyGroup" jdbcType="VARCHAR" />
+        <result column="conf_api_key" property="confApiKey" jdbcType="VARCHAR" />
+        <result column="is_dependencies" property="isDependencies" jdbcType="SMALLINT" />
+        <result column="value_type" property="valueType" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="base_column_sql">id,service_id,instance_id,property_id,property_value_id,current_value,started_value</sql>
+
+    <insert id="insert" parameterType="com.zto.zms.dal.model.ServicePropertyValueRef">
+        insert into service_property_value_ref (service_id, instance_id,
+            property_id, property_value_id, current_value, creator, modifier)
+        values (#{serviceId,jdbcType=INTEGER}, #{instanceId,jdbcType=INTEGER},
+            #{propertyId,jdbcType=INTEGER}, #{propertyValueId,jdbcType=INTEGER}, #{currentValue,jdbcType=VARCHAR},
+            #{creator,jdbcType=VARCHAR}, #{modifier,jdbcType=VARCHAR})
+    </insert>
+
+    <insert id="insertList" parameterType="list" useGeneratedKeys="true" keyProperty="id">
+        insert into service_property_value_ref (service_id, instance_id, property_id,
+            property_value_id, current_value, creator, modifier)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.serviceId,jdbcType=INTEGER}, #{item.instanceId,jdbcType=INTEGER}, #{item.propertyId,jdbcType=INTEGER},
+            #{item.propertyValueId,jdbcType=INTEGER}, #{item.currentValue,jdbcType=VARCHAR},
+            #{item.creator,jdbcType=VARCHAR}, #{item.modifier,jdbcType=VARCHAR})
+        </foreach>
+    </insert>
+
+    <update id="updateById">
+        update service_property_value_ref set
+            property_value_id = #{propertyValueId,jdbcType=INTEGER},
+            current_value = #{currentValue,jdbcType=VARCHAR},
+            modifier = #{modifier,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <delete id="deleteByIds">
+        delete from service_property_value_ref
+        where id in
+        <foreach collection="ids" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="listByServiceIdAndPropertyId" resultMap="BaseResultMap">
+        select <include refid="base_column_sql"/>
+        from service_property_value_ref
+        where service_id= #{serviceId}
+        and property_id = #{propertyId}
+        <if test="instanceId != null">
+            and instance_id = #{instanceId,jdbcType=INTEGER}
+        </if>
+    </select>
+
+    <select id="queryByInstanceId" resultMap="BaseResultDtoMap">
+        select ref.id,ref.service_id,ref.instance_id,ref.property_id,
+        ref.property_value_id,ref.current_value,ref.started_value,
+        property.service_type, property.instance_type, property.property_name,
+        property.property_group, property.conf_api_key, property.is_dependencies,property.value_type
+        from service_property_value_ref ref, service_property property
+        where ref.property_id = property.id
+        and ref.instance_id = #{instanceId}
+        order by ref.property_id, ref.property_value_id
+    </select>
+
+    <select id="queryByServiceId" resultMap="BaseResultDtoMap">
+        select ref.id,ref.service_id,ref.instance_id,ref.property_id,
+               ref.property_value_id,ref.current_value,ref.started_value,
+               property.service_type, property.instance_type, property.property_name,
+               property.property_group, property.conf_api_key, property.is_dependencies
+        from service_property_value_ref ref, service_property property
+        where ref.property_id = property.id
+         and ref.service_id= #{serviceId,jdbcType=INTEGER}
+         and ref.instance_id is null
+        order by ref. property_id, ref.property_value_id
+    </select>
+
+    <select id="listAllByServiceId" resultMap="BaseResultDtoMap">
+        select ref.id,ref.service_id,ref.instance_id,ref.property_id,
+               ref.property_value_id,ref.current_value,ref.started_value,
+               property.service_type, property.instance_type, property.property_name,
+               property.property_group, property.is_dependencies
+        from service_property_value_ref ref, service_property property
+        where ref.property_id = property.id
+         and ref.service_id= #{serviceId,jdbcType=INTEGER}
+        order by ref.property_id, ref.property_value_id
+    </select>
+
+    <delete id="deleteByInstanceId" parameterType="java.lang.Integer">
+        delete from service_property_value_ref where instance_id = #{instanceId,jdbcType=INTEGER}
+    </delete>
+
+    <delete id="deleteByServiceId" parameterType="java.lang.Integer">
+        delete from service_property_value_ref
+        where service_id= #{serviceId,jdbcType=INTEGER}
+        and instance_id is null
+    </delete>
+
+    <select id="listAllByServiceIdAndPropertyId" resultMap="BaseResultDtoMap">
+        select ref.id,ref.service_id,ref.instance_id,ref.property_id,
+               ref.property_value_id,ref.current_value,ref.started_value,
+               property.service_type, property.instance_type, property.property_name,
+               property.property_group, property.is_dependencies
+        from service_property_value_ref ref, service_property property
+        where ref.property_id = property.id
+         and ref.service_id= #{serviceId}
+         and ref.property_id = #{propertyId}
+    </select>
+
+    <update id="updateCurrentValueById">
+        update service_property_value_ref
+        set current_value = #{currentValue}
+        where id =#{id}
+    </update>
+
+    <select id="listByServiceIdAndInstanceId" resultMap="BaseResultDtoMap">
+         select ref.id,ref.service_id,ref.instance_id,ref.property_id,
+               ref.property_value_id,ref.current_value,ref.started_value,
+               property.service_type, property.instance_type, property.property_name,
+               property.property_group, property.is_dependencies
+        from service_property_value_ref ref, service_property property
+        where ref.property_id = property.id
+         and ref.service_id= #{serviceId}
+         and (
+            ref.instance_id= #{instanceId}
+          or
+            property.instance_type ='SERVICE'
+         )
+        order by ref.property_id, ref.property_value_id
+    </select>
+</mapper>

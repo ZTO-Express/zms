@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zto.zms.dal.mapper.ConfigApiMapper">
+    <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.ConfigApi">
+        <result column="id" property="id" jdbcType="INTEGER"/>
+        <result column="api_key" property="apiKey" jdbcType="VARCHAR"/>
+        <result column="file_name" property="fileName" jdbcType="VARCHAR"/>
+        <result column="file_type" property="fileType" jdbcType="VARCHAR"/>
+        <result column="config_scope" property="configScope" jdbcType="VARCHAR"/>
+
+    </resultMap>
+    <sql id="base_column_sql">
+        id,api_key,file_name,file_type,config_scope
+    </sql>
+
+    <select id="listByApiKeys" resultMap="BaseResultMap">
+        select <include refid="base_column_sql"/>
+        from config_api
+        where api_key in 
+        <foreach collection="list" open="(" item="apiKey" close=")" separator=",">
+            #{apiKey}
+        </foreach>
+    </select>
+
+</mapper>

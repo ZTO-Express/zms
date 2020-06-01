@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zto.zms.dal.mapper.ServicePropertyValueMapper" >
+  <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.ServicePropertyValue" >
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="property_id" property="propertyId" jdbcType="INTEGER" />
+    <result column="property_value" property="propertyValue" jdbcType="VARCHAR" />
+    <result column="display_value" property="displayValue" jdbcType="VARCHAR" />
+    <result column="is_override_scope" property="isOverrideScope" jdbcType="SMALLINT" />
+    <result column="creator" property="creator" jdbcType="VARCHAR" />
+    <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+    <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP" />
+    <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <sql id="base_column_sql">
+    id, property_id, property_value, display_value, is_override_scope,
+    creator, modifier, gmt_create, gmt_modified
+  </sql>
+
+  <insert id="insert" parameterType="com.zto.zms.dal.model.ServicePropertyValue" >
+    insert into service_property_value (id, property_id, property_value, 
+      display_value, is_override_scope, creator, 
+      modifier, gmt_create, gmt_modified
+      )
+    values (#{id,jdbcType=INTEGER}, #{propertyId,jdbcType=INTEGER}, #{propertyValue,jdbcType=VARCHAR}, 
+      #{displayValue,jdbcType=VARCHAR}, #{isOverrideScope,jdbcType=SMALLINT}, #{creator,jdbcType=VARCHAR}, 
+      #{modifier,jdbcType=VARCHAR}, #{gmtCreate,jdbcType=TIMESTAMP}, #{gmtModified,jdbcType=TIMESTAMP}
+      )
+  </insert>
+
+  <select id="getByPropertyId" resultMap="BaseResultMap">
+    select <include refid="base_column_sql"/>
+    from service_property_value
+    where property_id = #{propertyId,jdbcType=INTEGER}
+  </select>
+
+</mapper>

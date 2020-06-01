@@ -1,0 +1,28 @@
+.c-header-nav__user {
+  min-width: 100px;
+
+  .user__info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .user__avatar {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+  }
+
+  .user__dept {
+    color: #b3b9be;
+    padding-top: 8px;
+  }
+
+  .user__date {
+    width: 100%;
+    text-align: center;
+    border-top: 1px solid #eef0f6;
+    padding-top: 8px;
+    margin-top: 8px;
+  }
+}

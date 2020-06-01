@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zto.zms.dal.mapper.ServiceInstanceMapper" >
+  <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.ServiceInstance" >
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="service_id" property="serviceId" jdbcType="INTEGER" />
+    <result column="instance_type" property="instanceType" jdbcType="VARCHAR" />
+    <result column="instance_name" property="instanceName" jdbcType="VARCHAR" />
+    <result column="host_id" property="hostId" jdbcType="INTEGER" />
+    <result column="instance_status" property="instanceStatus" jdbcType="VARCHAR" />
+    <result column="is_deleted" property="isDeleted" jdbcType="SMALLINT" />
+    <result column="creator" property="creator" jdbcType="VARCHAR" />
+    <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+    <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP" />
+    <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP" />
+    <result column="host_ip" property="hostIp" jdbcType="VARCHAR" />
+
+  </resultMap>
+  <resultMap id="HostServiceInstanceResultMap" type="com.zto.zms.dal.domain.service.HostServiceInstanceDTO" >
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="service_id" property="serviceId" jdbcType="INTEGER" />
+    <result column="instance_type" property="instanceType" jdbcType="VARCHAR" />
+    <result column="instance_name" property="instanceName" jdbcType="VARCHAR" />
+    <result column="host_id" property="hostId" jdbcType="INTEGER" />
+    <result column="instance_status" property="instanceStatus" jdbcType="VARCHAR" />
+    <result column="host_ip" property="hostIp" jdbcType="VARCHAR"/>
+    <result column="host_name" property="hostName" jdbcType="VARCHAR"/>
+    <result column="host_status" property="hostStatus" jdbcType="VARCHAR"/>
+  </resultMap>
+
+  <resultMap id="servicesResultMap" type="com.zto.zms.dal.model.ServiceInstance">
+    <id column="instanceId" property="id"/>
+    <result column="host_id" property="hostId"/>
+    <result column="instance_name" property="instanceName" jdbcType="VARCHAR" />
+    <result column="instance_type" property="instanceType" jdbcType="VARCHAR" />
+    <result column="server_type" property="serverType" jdbcType="VARCHAR"/>
+  </resultMap>
+
+  <sql id="base_column_sql">
+    id,service_id,instance_type,instance_name,host_id,instance_status
+  </sql>
+  <select id="hostServices" resultMap="servicesResultMap">
+    select instance.*,ser.server_type
+    from service_instance instance
+    left join zms_service ser on (instance.service_id = ser.id and ser.is_deleted = 0)
+    where instance.is_deleted = 0 and instance.host_id =#{id}
+  </select>
+
+
+  <insert id="insert" parameterType="com.zto.zms.dal.model.ServiceInstance" useGeneratedKeys="true" keyProperty="id">
+    insert into service_instance (service_id, instance_type,
+      instance_name, host_id, instance_status, 
+      creator, modifier)
+    values (#{serviceId,jdbcType=INTEGER}, #{instanceType,jdbcType=VARCHAR},
+      #{instanceName,jdbcType=VARCHAR}, #{hostId,jdbcType=INTEGER}, #{instanceStatus,jdbcType=VARCHAR}, 
+      #{creator,jdbcType=VARCHAR}, #{modifier,jdbcType=VARCHAR})
+  </insert>
+
+  <insert id="insertList" parameterType="list" useGeneratedKeys="true" keyProperty="id">
+    insert into service_instance (service_id, instance_type, instance_name, host_id, instance_status, creator, modifier)
+    values
+    <foreach collection="list" item="item" separator=",">
+        (#{item.serviceId,jdbcType=INTEGER}, #{item.instanceType,jdbcType=VARCHAR},
+        #{item.instanceName,jdbcType=VARCHAR}, #{item.hostId,jdbcType=INTEGER},
+        #{item.instanceStatus,jdbcType=VARCHAR}, #{item.creator,jdbcType=VARCHAR}, #{item.modifier,jdbcType=VARCHAR})
+    </foreach>
+  </insert>
+
+  <select id="getById" parameterType="integer" resultMap="BaseResultMap">
+    select <include refid="base_column_sql"/> from service_instance
+    where id = #{id,jdbcType=INTEGER} and is_deleted = 0
+  </select>
+
+  <select id="listStartInstanceByServiceId" resultMap="BaseResultMap">
+    select <include refid="base_column_sql"/>
+    from service_instance
+    where service_id =#{serviceId}
+        and instance_status='START'
+        and is_deleted = 0
+    order by id
+  </select>
+
+  <select id="listInstanceByServiceId" resultMap="BaseResultMap">
+    select <include refid="base_column_sql"/>
+    from service_instance
+    where service_id =#{serviceId}
+    and is_deleted = 0
+    order by id
+  </select>
+
+  <select id="listInstanceByServiceIds" resultMap="BaseResultMap">
+    select <include refid="base_column_sql"/>
+    from service_instance
+    where service_id in
+    <foreach item="item" index="index" collection="serviceIds"
+             open="(" separator="," close=")">
+      #{item}
+    </foreach>
+    and is_deleted = 0
+  </select>
+
+  <select id="queryHostServiceInstance" parameterType="java.lang.Integer" resultMap="HostServiceInstanceResultMap">
+    select instance.id, instance.service_id, instance.instance_type,
+           instance.instance_name, instance.host_id, instance.instance_status,
+           host.host_ip, host.host_name, host.host_status from service_instance instance
+    left join zms_host host on instance.host_id = host.id
+    where instance.service_id = #{serviceId,jdbcType=INTEGER}
+    and instance.is_deleted = 0
+  </select>
+
+  <update id="deleteByIds">
+    update service_instance set is_deleted = 1
+    where id in
+    <foreach collection="ids" open="(" separator="," close=")" item="item">
+      #{item}
+    </foreach>
+  </update>
+
+  <select id="findByHostIdsAndStatus" resultMap="BaseResultMap">
+    select <include refid="base_column_sql"/>
+    from service_instance
+    <where>
+    <if test="hostIds != null and hostIds.size() > 0 ">
+      and host_id in
+      <foreach item="item" index="index" collection="hostIds"
+               open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+    <if test="instanceStatus != '' ">
+        and instance_status=#{instanceStatus,jdbcType=VARCHAR}
+    </if>
+    and is_deleted = 0
+    </where>
+  </select>
+
+  <select id="getHostByInstanceId" resultMap="HostServiceInstanceResultMap">
+    select instance.id, instance.service_id, instance.instance_type,
+           instance.instance_name, instance.host_id, instance.instance_status,
+           host.host_ip, host.host_name, host.host_status
+    from service_instance instance, zms_host host
+    where instance.id = #{instanceId}
+        and instance.host_id = host.id
+        and instance.is_deleted = 0
+  </select>
+
+  <select id="listByInstanceIds" resultMap="BaseResultMap">
+    select instance.id, instance.service_id, instance.instance_type,
+           instance.instance_name, instance.host_id, instance.instance_status
+    from service_instance instance
+    where instance.id in 
+    <foreach collection="instanceIds" open="(" separator="," close=")" item="instanceId">
+      #{instanceId}
+    </foreach>
+        and instance.is_deleted = 0
+  </select>
+
+  <select id="listHostByInstanceIds" resultMap="HostServiceInstanceResultMap">
+    select instance.id, instance.service_id, instance.instance_type,
+    instance.instance_name, instance.host_id, instance.instance_status,
+    host.host_ip, host.host_name, host.host_status
+    from service_instance instance, zms_host host
+    where instance.id in
+          <foreach collection="instanceIds" open="(" separator="," close=")" item="instanceId">
+            #{instanceId}
+          </foreach>
+      and instance.host_id = host.id
+      and instance.is_deleted = 0
+  </select>
+
+  <update id="updateInstanceNameById">
+    update service_instance set instance_name = #{instanceName}
+    where id=#{instanceId}
+  </update>
+
+  <update id="updateInstanceStatus">
+    update service_instance
+    set instance_status = #{instanceStatus}
+    where id=#{instanceId}
+  </update>
+
+  <update id="stopInstance">
+    update service_instance set instance_status = 'STOP'
+    <if test="modifier!=null">
+     , modifier = #{modifier}
+    </if>
+    where id=#{instanceId}
+  </update>
+
+  <select id="listByServiceIdAndInstanceType" resultMap="BaseResultMap">
+    select <include refid="base_column_sql"/>
+    from service_instance
+    where service_id =#{serviceId}
+    and instance_type =#{instanceType}
+    and is_deleted = 0
+  </select>
+
+  <select id="listAllByServiceId" resultMap="BaseResultMap">
+    select <include refid="base_column_sql"/>
+    from service_instance
+    where service_id =#{serviceId}
+    and is_deleted = 0
+  </select>
+
+  <select id="listAllByEnvId" resultMap="BaseResultMap">
+    select service_instance.id,service_instance.service_id,service_instance.instance_type,service_instance.instance_name,
+    service_instance.host_id,service_instance.instance_status
+    from service_instance, zms_service
+    where service_instance.service_id = zms_service.id
+    and service_instance.is_deleted = 0
+    and zms_service.is_deleted = 0
+    and zms_service.environment_id  = #{envId}
+  </select>
+</mapper>

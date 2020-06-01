@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zto.zms.dal.mapper.OperationLogMapper">
+  <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.OperationLog">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="opeartor" jdbcType="VARCHAR" property="opeartor" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="operation" jdbcType="VARCHAR" property="operation" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+  </resultMap>
+  <insert id="insertSelective">
+    INSERT INTO operation_log(opeartor,`name`,operation,content) VALUES (#{opeartor},#{name},#{operation},#{content})
+  </insert>
+
+</mapper>

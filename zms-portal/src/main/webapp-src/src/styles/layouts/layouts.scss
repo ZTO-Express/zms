@@ -1,0 +1,228 @@
+.l-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+.el-form-item__label {
+  font-size: 13px;
+  width: 80px;
+}
+.l-page {
+  height: 100%;
+  .page-nav {
+    margin: 20px;
+    padding: 12px;
+    background: #fff;
+    font-size: 16px;
+    border-radius: 4px;
+  }
+
+  .l-page__search {
+    background: #fff;
+    padding: 15px 20px;
+    position: relative;
+
+    .search__form {
+      .el-form-item {
+        margin-bottom: 13px;
+
+        .el-form-item__label {
+          font-size: 12px;
+          width: 80px;
+        }
+      }
+
+      .el-input {
+        width: 163px;
+      }
+
+      .el-date-editor--datetime {
+        width: 200px;
+      }
+    }
+
+    .search__btns {
+      margin-bottom: 3px;
+    }
+
+    .search__collapse {
+      text-align: center;
+      color: $color-blue-light-5;
+      font-size: 12px;
+      cursor: pointer;
+    }
+  }
+
+  .l-page__search {
+    .content_breadcrumb {
+      padding: 10px 0;
+      // background: #ccc;
+    }
+    .title {
+      overflow: hidden;
+      padding: 10px 0 0;
+      color: #656565;
+      text-align: center;
+      // font-size: 13px;
+      h3 {
+        display: inline-block;
+        margin: 0 40px 0 0;
+      }
+      label {
+        font-size: 14px;
+        font-weight: bold;
+      }
+      .l-page__env {
+        .el-input .el-input__inner {
+          width: 90px;
+          color: #f70000;
+          font-weight: bold;
+        }
+      }
+      &.env {
+        position: absolute;
+        z-index: 99;
+        right: 20px;
+        top: 40px;
+      }
+    }
+    .el-tabs__item {
+      color: #646464;
+    }
+    .el-tabs__item.is-active {
+      color: #409eff;
+    }
+  }
+
+  .l-page__content {
+    padding: 0 0 0px 0;
+    position: relative;
+
+    .content--padding {
+      background: #fff;
+      width: calc(100% - 40px);
+      width: -webkit-calc(100% - 70px);
+      width: -moz-calc(100% - 70px);
+      height: 100%;
+      position: absolute;
+      // background: #ccc;
+      border-radius: 4px;
+      overflow: auto;
+      margin: 0px 20px 14px;
+    }
+
+    .content__header {
+      padding: 5px 15px;
+      height: 35px;
+      line-height: 35px;
+      border-bottom: 1px solid #e4e7ed;
+    }
+
+    .content__body {
+      //36+40
+      height: calc(100% - 115px);
+      height: -webkit-calc(100% - 115px);
+      height: -moz-calc(100% - 115px);
+      padding: 10px 15px;
+    }
+
+    .content__footer {
+      height: 40px;
+    }
+
+    .content__wrap {
+      height: inherit;
+    }
+  }
+}
+
+.l-page--flex {
+  display: flex;
+  flex-direction: column;
+
+  .l-page__content {
+    flex-grow: 1;
+  }
+}
+.el-table {
+  border-radius: 4px 0px 0px 4px;
+}
+.el-table__header {
+  background: #e8e8e8;
+}
+.l-page--scroll {
+  .l-page__content {
+    .content--padding {
+      height: 100%;
+      width: 100%;
+      position: relative;
+    }
+  }
+}
+
+.l-table-list {
+  .l-table-box {
+    margin-bottom: 30px;
+    border-radius: 4px;
+    h3 {
+      font-size: 14px;
+      margin: 15px 5px 15px;
+    }
+    .el-table__body-wrapper {
+      height: auto !important;
+    }
+  }
+}
+
+.l-chart-container {
+  .l-chart-box {
+    margin-right: -35px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    h3 {
+      font-size: 20px;
+      color: #666;
+      font-weight: bold;
+      text-align: center;
+      padding: 30px 0 0px;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+    .box {
+      width: calc(50% - 60px);
+      border: 1px solid #e6e5e6;
+      padding: 15px;
+      padding-top: 0;
+      margin-right: 20px;
+      margin-bottom: 20px;
+      display: inline-block;
+      vertical-align: top;
+      border-radius: 4px;
+      .position {
+        height: 330px;
+      }
+    }
+  }
+  .select-box {
+    position: relative;
+    .el-select {
+      position: absolute;
+      top: 10px;
+      right: 0;
+      z-index: 10;
+    }
+  }
+  .condition {
+    margin-bottom: 20px;
+    margin-top: 20px;
+    display: inline-block;
+    label {
+      margin-right: 10px;
+    }
+  }
+}
+
+.theme-application .content__body {
+  height: calc(100% - 115px);
+}

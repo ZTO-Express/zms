@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zto.zms.dal.mapper.ServicePropertyMapper" >
+  <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.ServiceProperty" >
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="service_type" property="serviceType" jdbcType="VARCHAR" />
+    <result column="instance_type" property="instanceType" jdbcType="VARCHAR" />
+    <result column="property_name" property="propertyName" jdbcType="VARCHAR" />
+    <result column="property_group" property="propertyGroup" jdbcType="VARCHAR" />
+    <result column="is_dependencies" property="isDependencies" jdbcType="SMALLINT" />
+    <result column="choose_type" property="chooseType" jdbcType="VARCHAR" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="display_group" property="displayGroup" jdbcType="VARCHAR" />
+    <result column="display_name" property="displayName" jdbcType="VARCHAR" />
+    <result column="default_value" property="defaultValue" jdbcType="VARCHAR" />
+    <result column="is_required" property="isRequired" jdbcType="SMALLINT" />
+    <result column="is_read_only" property="isReadOnly" jdbcType="SMALLINT"/>
+    <result column="value_type" property="valueType" jdbcType="VARCHAR" />
+    <result column="min_len" property="minLen" jdbcType="INTEGER" />
+    <result column="max_len" property="maxLen" jdbcType="INTEGER" />
+    <result column="min_value" property="minValue" jdbcType="INTEGER" />
+    <result column="max_value" property="maxValue" jdbcType="INTEGER" />
+    <result column="scope" property="scope" jdbcType="VARCHAR" />
+    <result column="order_num" property="orderNum" jdbcType="INTEGER" />
+    <result column="creator" property="creator" jdbcType="VARCHAR" />
+    <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+    <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP" />
+    <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <sql id="base_column_sql">
+    id, service_type, instance_type, property_name, property_group, is_dependencies, choose_type, description,
+    display_group, display_name, default_value, is_required, is_read_only, value_type, min_len, max_len, min_value, max_value,
+    scope, order_num, creator, modifier, gmt_create, gmt_modified
+  </sql>
+
+  <insert id="insert" parameterType="com.zto.zms.dal.model.ServiceProperty" >
+    insert into service_property (id, service_type, instance_type, 
+      property_name, property_group, is_dependencies,
+      choose_type, description, display_group, 
+      display_name, default_value, is_required, is_read_only,
+      value_type, min_len, max_len, min_value,
+      max_value, scope, order_num, creator, modifier, gmt_create, gmt_modified)
+    values (#{id,jdbcType=INTEGER}, #{serviceType,jdbcType=VARCHAR}, #{instanceType,jdbcType=VARCHAR}, 
+      #{propertyName,jdbcType=VARCHAR}, #{propertyGroup,jdbcType=VARCHAR}, #{isDependencies,jdbcType=SMALLINT}, 
+      #{chooseType,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, #{displayGroup,jdbcType=VARCHAR}, 
+      #{displayName,jdbcType=VARCHAR}, #{defaultValue,jdbcType=VARCHAR}, #{isRequired,jdbcType=SMALLINT},
+      #{isReadOnly,jdbcType=SMALLINT}, #{valueType,jdbcType=VARCHAR}, #{minLen,jdbcType=INTEGER},
+      #{maxLen,jdbcType=INTEGER}, #{minValue,jdbcType=INTEGER}, #{maxValue,jdbcType=INTEGER},
+      #{scope,jdbcType=VARCHAR}, #{orderNum,jdbcType=INTEGER},#{creator,jdbcType=VARCHAR},
+      #{modifier,jdbcType=VARCHAR}, #{gmtCreate,jdbcType=TIMESTAMP}, #{gmtModified,jdbcType=TIMESTAMP})
+  </insert>
+
+  <select id="getIdByServiceTypeAndName" resultType="integer">
+    select  id
+    from service_property
+    where service_type= #{serviceType}
+    and instance_type = #{instanceType}
+    and property_name = #{propertyName}
+    and property_group = #{propertyGroup}
+  </select>
+
+  <select id="getClusterProperty" resultMap="BaseResultMap">
+    select <include refid="base_column_sql"/>
+    from service_property
+    where service_type in ('ROCKETMQ','KAFKA')
+  </select>
+
+  <select id="getServiceProperty" resultMap="BaseResultMap">
+  select <include refid="base_column_sql"/>
+  from service_property
+  where service_type = #{serviceType,jdbcType=VARCHAR}
+  <if test="scopes != null and scopes.size() > 0">
+    and scope in
+    <foreach collection="scopes" item="item" separator="," open="(" close=")">
+      #{item}
+    </foreach>
+  </if>
+  <if test="instanceTypes != null and instanceTypes.size() > 0">
+    and instance_type in
+    <foreach collection="instanceTypes" item="item" separator="," open="(" close=")">
+      #{item}
+    </foreach>
+  </if>
+  order by order_num
+</select>
+
+  <select id="getIdByServiceType" resultType="integer">
+    select id
+    from service_property
+    where property_name = #{serviceType}
+    and is_dependencies = 1
+  </select>
+</mapper>

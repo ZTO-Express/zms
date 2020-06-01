@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zto.zms.dal.mapper.ConsumerEnvironmentRefMapper" >
+  <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.ConsumerEnvironmentRef" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="consumer_id" property="consumerId" jdbcType="BIGINT" />
+    <result column="environment_id" property="environmentId" jdbcType="INTEGER" />
+    <result column="service_id" property="serviceId" jdbcType="INTEGER" />
+    <result column="creator" property="creator" jdbcType="VARCHAR" />
+    <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+    <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP" />
+    <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP" />
+    <result column="gated_ips" property="gatedIps" jdbcType="VARCHAR" />
+    <result column="gated_service_id" property="gatedServiceId" jdbcType="INTEGER" />
+  </resultMap>
+  <resultMap id="BaseResultDtoMap" type="com.zto.zms.dal.domain.alert.EnvironmentRefDTO" >
+    <result column="environment_id" property="environmentId" jdbcType="INTEGER" />
+    <result column="service_id" property="serviceId" jdbcType="INTEGER" />
+    <result column="environment_name" property="environmentName" jdbcType="VARCHAR" />
+    <result column="server_name" jdbcType="VARCHAR" property="serverName"/>
+    <result column="server_type" jdbcType="VARCHAR" property="serverType"/>
+  </resultMap>
+
+
+  <resultMap id="BaseResultEnvMapList" type="com.zto.zms.dal.model.ConsumerEnvironmentRef">
+    <id column="id" property="id"/>
+    <result column="envId" property="environmentId"/>
+    <result column="cluster_name" jdbcType="VARCHAR" property="clusterName"/>
+    <result column="server_type" jdbcType="VARCHAR" property="clusterType"/>
+    <result column="gatedIps" property="gatedIps" jdbcType="VARCHAR" />
+    <result column="gated_service_id" property="gatedServiceId" jdbcType="INTEGER" />
+    <result column="environment_name" property="environmentName" jdbcType="VARCHAR" />
+    <result column="service_id" property="serviceId" jdbcType="VARCHAR" />
+    <result column="consumer_id" property="consumerId" jdbcType="BIGINT" />
+
+
+  </resultMap>
+
+  <select id="queryEnvironmentRefByConsumerName" parameterType="string" resultMap="BaseResultDtoMap">
+    select ref.environment_id, ref.service_id, env.environment_name
+    from consumer
+    left join consumer_environment_ref ref on consumer.id = ref.consumer_id
+    left join zms_environment env on env.id = ref.environment_id
+    where consumer.name = #{name,jdbcType=VARCHAR}
+    <if test="null != envIds">
+      and env.id in
+      <foreach item="item" index="index" collection="envIds"
+               open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+    order by env.order_num, env.id
+  </select>
+
+  <select id="listByConsumerId" resultMap="BaseResultMap">
+    select DISTINCT id, consumer_id, environment_id, service_id,gated_ips,gated_service_id
+    from
+    consumer_environment_ref
+    where consumer_id in (
+    <foreach collection="consumerIds" separator="," item="consumerId">
+      #{consumerId}
+    </foreach>
+    )
+  </select>
+  <select id="getconsumerenvs" resultMap="BaseResultEnvMapList">
+  select service.id service_id,service.server_name as cluster_name,service.server_type,ref.environment_id envId,
+  ref.id id,ref.consumer_id,ref.gated_ips gatedIps,ref.gated_service_id,env.environment_name environmentName
+  FROM consumer
+  left join consumer_environment_ref ref on consumer.id=ref.consumer_id
+  left join zms_service service on (ref.service_id=service.id and service.is_deleted = 0)
+  left join zms_environment env on env.id=ref.environment_id
+  where ref.consumer_id in
+    <foreach item="item" index="index" collection="ids"
+             open="(" separator="," close=")">
+      #{item}
+    </foreach>
+  order by env.order_num,env.id
+  </select>
+
+  <select id="getconsumerenvsByName" resultMap="BaseResultDtoMap">
+  select service.id service_id ,service.server_name,service.server_type,ref.environment_id,ref.id id,ref.gated_ips gatedIps,ref.gated_service_id,env.environment_name environmentName
+  FROM consumer_environment_ref ref
+  join consumer on consumer.id=ref.consumer_id
+  LEFT JOIN zms_service service on (ref.service_id=service.id and service.is_deleted = 0)
+  left join zms_environment env on env.id=ref.environment_id
+  where consumer.name = #{name,jdbcType=VARCHAR}
+  order by env.order_num, env.id
+  </select>
+
+  <!-- 消费组添加到不同环境-->
+  <insert id="insert">
+        insert into consumer_environment_ref
+        (consumer_id,environment_id,service_id,creator,modifier,
+        gmt_create,gmt_modified)
+        values (#{consumerId},#{environmentId},#{serviceId},#{creator},#{modifier},
+        #{gmtCreate},#{gmtModified});
+  </insert>
+
+  <insert id="insertList" parameterType="list" useGeneratedKeys="true" keyProperty="id">
+    insert into consumer_environment_ref (consumer_id,environment_id,service_id,creator,modifier)
+    values
+    <foreach collection="list" item="item" separator=",">
+      (#{item.consumerId},#{item.environmentId},#{item.serviceId},#{item.creator},#{item.modifier})
+    </foreach>
+  </insert>
+
+  <update id="updateGateCluster">
+    update consumer_environment_ref
+    set gated_service_id=#{gateClusterId}
+    ,gated_ips =#{gatedIps}
+    ,modifier=#{modifier}
+    where id in
+    <foreach item="item" index="index" collection="ids"
+                      open="(" separator="," close=")">
+    #{item}
+  </foreach>
+  </update>
+
+  <delete id="deleteByConsumerId">
+    delete from consumer_environment_ref
+    where consumer_id =#{consumerId}
+
+  </delete>
+
+  <update id="updateMigrateConsumers">
+    update consumer_environment_ref
+    set service_id = #{targetClusterId}
+    where service_id = #{srcClusterId}
+    and consumer_id in
+    <foreach item="item" index="index" collection="consumerIds"
+             open="(" separator="," close=")">
+      #{item}
+    </foreach>
+  </update>
+
+  <select id="getByEnvIdAndConsumerName" resultType="string">
+    select service.server_name
+    from consumer, consumer_environment_ref ref, zms_service service
+    where consumer.id = ref.consumer_id
+        and ref.service_id=service.id and service.is_deleted = 0
+        and ref.environment_id = #{envId}
+        and consumer.name =#{consumerName}
+  </select>
+
+</mapper>

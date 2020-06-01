@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zto.zms.dal.mapper.TopicMapper">
+    <resultMap id="BaseResultMap" type="com.zto.zms.dal.model.Topic">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="create_date" jdbcType="TIMESTAMP" property="createDate"/>
+        <result column="applicant" jdbcType="VARCHAR" property="applicant"/>
+        <result column="domain" jdbcType="VARCHAR" property="domain"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="partitions" jdbcType="BIGINT" property="partitions"/>
+        <result column="cluster_id" jdbcType="BIGINT" property="clusterId"/>
+        <result column="cluster_name" jdbcType="VARCHAR" property="clusterName"/>
+        <result column="cluster_type" jdbcType="VARCHAR" property="clusterType"/>
+        <result column="cluster_bootstraps" jdbcType="VARCHAR" property="clusterBootstraps"/>
+        <result column="create_from" jdbcType="BIGINT" property="createFrom"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="tps" jdbcType="INTEGER" property="tps"/>
+        <result column="msgSzie" jdbcType="INTEGER" property="msgszie"/>
+        <result column="modify_date" jdbcType="TIMESTAMP" property="modifyDate"/>
+        <result column="memo" jdbcType="VARCHAR" property="memo"/>
+        <result column="gated_cluster" jdbcType="BIGINT" property="gatedCluster"/>
+        <result column="gated_ips" jdbcType="VARCHAR" property="gatedIps"/>
+        <result column="alert_emails" jdbcType="VARCHAR" property="alertEmails"/>
+        <result column="applicant_no" jdbcType="VARCHAR" property="applicantNo"/>
+        <result column="replication" jdbcType="TINYINT" property="replication"/>
+    </resultMap>
+
+    <update id="updateByPrimaryKeySelective">
+        update topic
+        <set>
+            <if test="createDate != null">
+                create_date = #{createDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="applicant != null">
+                applicant = #{applicant,jdbcType=VARCHAR},
+            </if>
+            <if test="domain != null">
+                `domain` = #{domain,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null">
+                `name` = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="partitions != null">
+                partitions = #{partitions,jdbcType=BIGINT},
+            </if>
+            <if test="clusterId != null">
+                cluster_id = #{clusterId,jdbcType=BIGINT},
+            </if>
+            <if test="createFrom != null">
+                create_from = #{createFrom,jdbcType=BIGINT},
+            </if>
+            <if test="status != null">
+                status = #{status,jdbcType=INTEGER},
+            </if>
+            <if test="tps != null">
+                tps = #{tps,jdbcType=INTEGER},
+            </if>
+            <if test="msgszie != null">
+                msgSzie = #{msgszie,jdbcType=INTEGER},
+            </if>
+            <if test="modifyDate != null">
+                modify_date = #{modifyDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="memo != null">
+                memo = #{memo,jdbcType=VARCHAR},
+            </if>
+            <if test="gatedCluster != null">
+                gated_cluster = #{gatedCluster,jdbcType=BIGINT},
+            </if>
+            <if test="gatedIps != null">
+                gated_ips = #{gatedIps,jdbcType=VARCHAR},
+            </if>
+            <if test="alertEmails != null">
+                alert_emails = #{alertEmails,jdbcType=VARCHAR},
+            </if>
+            <if test="applicantNo != null">
+                applicant_no = #{applicantNo,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id=#{id,jdbcType=BIGINT}
+    </update>
+
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO topic(
+        create_date,applicant,`domain`,name,partitions,cluster_id
+        ,create_from,status,tps,msgSzie,modify_date,
+        memo,gated_cluster,gated_ips,alert_emails,applicant_no
+        ) VALUES (#{createDate},#{applicant},#{domain},#{name},#{partitions},
+        #{clusterId},#{createFrom},#{status},#{tps},#{msgszie},
+        #{modifyDate},#{memo},#{gatedCluster},#{gatedIps},#{alertEmails},#{applicantNo}
+      )
+    </insert>
+
+    <select id="selectTopics" resultMap="BaseResultMap">
+        SELECT distinct topic.id,topic.create_date,topic.applicant,topic.`domain`,topic.name,topic.partitions,
+            topic.create_from,topic.status,topic.tps,topic.msgSzie,topic.modify_date, topic.memo,topic.alert_emails
+        FROM topic , topic_environment_ref ref
+        <if test="(serverName !=null and serverName !='') or (serverType !=null and serverType !='')">
+        left join zms_service service on (ref.service_id = service.id and service.is_deleted = 0)
+        </if>
+        <include refid="topic_base_select"/>
+        <if test="name != null and '' != name ">
+            and topic.name like CONCAT('%',#{name},'%')
+        </if>
+        and topic.status not in (-2)
+        order by topic.modify_date DESC
+    </select>
+
+    <select id="selectExactTopics" resultMap="BaseResultMap">
+        SELECT distinct topic.id,topic.create_date,topic.applicant,topic.`domain`,topic.name,topic.partitions,
+            topic.create_from,topic.status,topic.tps,topic.msgSzie,topic.modify_date, topic.memo,topic.alert_emails
+        FROM topic , topic_environment_ref ref
+        <if test="(serverName !=null and serverName !='') or (serverType !=null and serverType !='')">
+        left join zms_service service on (ref.service_id = service.id and service.is_deleted = 0)
+        </if>
+        <include refid="topic_base_select"/>
+        <if test="name != null and '' != name ">
+            and topic.name = #{name,jdbcType=VARCHAR}
+        </if>
+        and topic.status not in (-2)
+        order by topic.modify_date DESC
+    </select>
+
+    <sql id="topic_base_select">
+        where topic.id=ref.topic_id
+        <if test="envId !=null">
+            and ref.environment_id=#{envId}
+        </if>
+        <if test="serviceId !=null">
+            and ref.service_id = #{serviceId}
+        </if>
+        <if test="serverName !=null and serverName !=''">
+            and service.server_name = #{serverName}
+        </if>
+        <if test="serverType !=null and serverType !=''">
+            and service.server_type = #{serverType}
+        </if>
+        <if test="applicant != null and '' != applicant  ">
+            and topic.applicant = #{applicant}
+        </if>
+        <if test="domain != null and '' != domain  ">
+            and topic.domain = #{domain}
+        </if>
+        <if test="status != null and '-1' != status and 0==status">
+            and topic.status IN (0,2)
+        </if>
+        <if test="status != null and '-1' != status and 1==status">
+            and topic.status in (1,3)
+        </if>
+        <if test="status != null and status ==2">
+            and topic.status >0
+        </if>
+    </sql>
+
+    <select id="selectTopicsByKeyWord" resultMap="BaseResultMap">
+        SELECT distinct topic.id,topic.create_date,topic.applicant,topic.`domain`,topic.name,topic.partitions
+        ,topic.create_from,topic.status,topic.tps,topic.msgSzie,topic.modify_date,
+        topic.memo,topic.gated_cluster,topic.gated_ips,topic.alert_emails,topic.replication
+        FROM topic
+        left join topic_environment_ref ref on topic.id=ref.topic_id
+        left join zms_service service on ref.service_id = service.id
+        <where>
+        <if test="id !=null">
+            and topic.id=#{id}
+        </if>
+        <if test="envId !=null">
+            and ref.environment_id=#{envId}
+        </if>
+        <if test="serviceId !=null">
+            and ref.service_id = #{serviceId}
+        </if>
+        <if test="name != null and '-1' != name ">
+            and topic.name like CONCAT('%',#{name},'%')
+        </if>
+        <if test="status != null and '-1' != status and 0==status">
+            and topic.status IN (0,2)
+        </if>
+        <if test="status != null and '-1' != status and 1==status">
+            and topic.status in (1,3)
+        </if>
+        <if test="status != null and status ==2">
+            and topic.status >0
+        </if>
+        <if test="keyWord != null and '-1' != keyWord ">
+            and (lower(service.server_name) like CONCAT('%',#{keyWord},'%') or lower(topic.name) like CONCAT('%',#{keyWord},'%') or topic.applicant like CONCAT('%',#{keyWord},'%'))
+        </if>
+        and topic.status not in (-2)
+        </where>
+        order by topic.modify_date DESC
+    </select>
+
+    <select id="selectTopicsByServiceId" resultMap="BaseResultMap">
+        SELECT topic.id, topic.name, topic.partitions, topic.replication FROM topic
+        <if test="serviceId != null">
+            left join topic_environment_ref ref on topic.id = ref.topic_id
+        </if>
+        where topic.status > 0
+        <if test="serviceId != null">
+            and ref.service_id = #{serviceId}
+        </if>
+        order by topic.modify_date DESC
+    </select>
+
+    <select id="selectMigratedTopicsById" resultMap="BaseResultMap">
+        SELECT topic.id, topic.name, topic.partitions, topic.replication, ref.service_id cluster_id FROM topic, topic_environment_ref ref
+        where topic.id = ref.topic_id
+            and topic.status > 0
+            and ref.environment_id = #{envId}
+            and topic.id in
+            <foreach item="item" index="index" collection="topicIds"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </select>
+
+    <select id="selectTopicNames" resultMap="BaseResultMap">
+        SELECT topic.id,topic.name  FROM topic where
+        topic.name like CONCAT('%',#{name},'%')
+        order by modify_date DESC
+
+    </select>
+
+    <select id="selectTopicName" resultMap="BaseResultMap">
+        SELECT topic.id,topic.name  FROM topic where
+        topic.name =#{name}
+    </select>
+
+    <select id="getByTopicName" resultMap="BaseResultMap">
+        SELECT topic.id,topic.name  FROM topic where
+        topic.name =#{name}
+        and status >= 0
+    </select>
+
+    <update id="softDelete">
+        update topic set status= -2 where id = #{id}
+    </update>
+
+    <update id="updateGatedInfo">
+        update topic set gated_ips = #{gatedIps,jdbcType=VARCHAR},gated_cluster = #{gatedClusterId,jdbcType=BIGINT}
+        where id=#{id,jdbcType=BIGINT}
+    </update>
+
+    <!-- 根据名称查询，不区分大小写-->
+    <select id="selectTopicByName" resultMap="BaseResultMap">
+        SELECT topic.* FROM
+        topic
+        <where>
+            <if test="name != null and name != ''">
+                and lower(topic.name) = #{name,jdbcType=VARCHAR}
+            </if>
+            <if test="id != null">
+                and topic.id <![CDATA[!=]]> #{id,jdbcType=BIGINT}
+            </if>
+                and topic.status >0
+        </where>
+    </select>
+
+    <!-- 根据名称查询，不区分大小写-->
+    <select id="selectTopicAndService" resultMap="BaseResultMap">
+        SELECT topic.*,service.server_name as cluster_name,service.server_type as cluster_type
+        FROM topic
+        left join topic_environment_ref ref on topic.id=ref.topic_id
+        left join zms_service service on (ref.service_id = service.id and service.is_deleted = 0)
+        <where>
+        <if test="name != null and name != ''">
+            and lower(topic.name) = #{name,jdbcType=VARCHAR}
+        </if>
+        <if test="id != null">
+            and topic.id <![CDATA[!=]]> #{id,jdbcType=BIGINT}
+        </if>
+        <if test="envId != null and '-1' != envId and 0 != envId">
+            and
+            ref.environment_id = #{envId,jdbcType=BIGINT}
+        </if>
+        </where>
+    </select>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT * FROM topic where id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM topic
+    </select>
+
+    <update id="deleteById">
+        update topic set status='-2'
+        where id =#{id}
+    </update>
+
+    <update id="updateStatusById">
+        update topic set status=#{status}
+        where id =#{id}
+    </update>
+
+
+    <update id="updateById">
+        update topic
+        <set>
+            <if test="partitions !=null ">
+                partitions=#{partitions},
+            </if>
+            <if test="replication !=null ">
+                replication=#{replication},
+            </if>
+        </set>
+        where id =#{id}
+    </update>
+
+
+    <select id="uniqueTopicCheck" resultType="boolean">
+        select count(*) =0
+        from topic
+        where lower(topic.name) = #{name}
+    </select>
+
+</mapper>

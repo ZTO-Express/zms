@@ -1,0 +1,51 @@
+.u-text-left {
+  text-align: left !important;
+}
+
+.u-text-center {
+  text-align: center !important;
+}
+
+.u-text-right {
+  text-align: right !important;
+}
+
+.u-float-left {
+  float: left;
+}
+
+.u-float-right {
+  float: right;
+}
+
+.u-flex {
+  display: flex;
+}
+
+.u-flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.u-flex-left {
+  display: flex;
+  align-items: center;
+  padding-left: 30px;
+}
+
+.u-font-size-small {
+  font-size: $font-size-small;
+}
+
+.u-font-size-base {
+  font-size: $font-size-base;
+}
+
+.u-font-size-large {
+  font-size: $font-size-large;
+}
+
+.u-font-size-huge {
+  font-size: $font-size-huge;
+}
