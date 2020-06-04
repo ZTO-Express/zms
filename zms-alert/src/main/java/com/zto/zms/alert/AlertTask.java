@@ -49,8 +49,6 @@ public class AlertTask implements CommandLineRunner, DisposableBean {
     private static final Logger logger = LoggerFactory.getLogger(AlertTask.class);
 
     @Autowired
-    private HttpClient httpClientHelper;
-    @Autowired
     private InfluxdbClient client;
     @Autowired
     private NotificationService notificationService;
@@ -119,7 +117,7 @@ public class AlertTask implements CommandLineRunner, DisposableBean {
     private List<AlertRuleConfig> getEffectAlertRulesByEnv() throws IOException {
         Map<String, String> params = Maps.newHashMap();
         params.put("env", envName);
-        String resp = httpClientHelper.getWithString(getEffectAlertRulesByEnvUrl, params);
+        String resp = HttpClient.getWithString(getEffectAlertRulesByEnvUrl, params);
         Result result = JSON.parseObject(resp, Result.class);
         Assert.that(result.isStatus(), "query config error:" + result.getMessage());
         return JSON.parseArray(JSON.toJSONString(result.getResult()), AlertRuleConfig.class);
