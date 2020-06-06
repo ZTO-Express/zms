@@ -105,6 +105,7 @@ GitHub下载地址：[安装包](https://github.com/ZTO-Express/zms/releases/dow
 
    ``` shell
     git clone https://github.com/ZTO-Express/zms.git
+    checkout 最新版本tag
    ```
 
 2. 下载第三方软件安装包（可选）
