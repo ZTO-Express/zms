@@ -15,6 +15,7 @@
 package com.zto.zms.agent.core.manager;
 
 import com.google.common.collect.Lists;
+import com.zto.zms.agent.core.supervisor.SupervisordProcessConfigAssemble;
 import com.zto.zms.common.RunCommonConfig;
 import com.zto.zms.utils.Assert;
 import com.zto.zms.writer.IniFileWriter;
@@ -28,8 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.xmlrpc.XmlRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -47,16 +46,11 @@ import static com.zto.zms.agent.core.constant.EnvironmentOptConstant.SUPERVISOR_
  * @author lidawei
  * @date 2020/2/28
  **/
-@Service("supervisord")
 public class UnixProcessManager implements ProcessManager {
 	private static Logger logger = LoggerFactory.getLogger(UnixProcessManager.class);
 
-	@Autowired
-	private ProcessConfigAssemble processConfigAssemble;
-	@Autowired
-	private ZmsPortalApi zmsPortalApi;
-	@Autowired
-	private SupervisordApi supervisordApi;
+	private ProcessConfigAssemble processConfigAssemble = new SupervisordProcessConfigAssemble();
+	private SupervisordApi supervisordApi = SupervisordApi.getInstance();
 
 
 	@Override
@@ -67,7 +61,7 @@ public class UnixProcessManager implements ProcessManager {
 		String lastStartProgramName = processRequestDto.getLastStartProgramName();
 		//根据服务processId下载服务配置
 		//下载并解压服务配置文件
-		zmsPortalApi.uploadConfigFile(processId, programName);
+		ZmsPortalApi.getInstance().uploadConfigFile(processId, programName);
 		//supervisor配置文件
 		uploadSupervisorConfig(processId, programName, lastStartProgramName);
 		supervisordApi.reloadConfig();
@@ -121,7 +115,7 @@ public class UnixProcessManager implements ProcessManager {
 	 */
 	private void uploadSupervisorConfig(Integer processId, String programName, String lastStartProgramName) throws Exception {
 		//服务环境配置参数
-		RunCommonConfig runCommonConfig = zmsPortalApi.runCommon(processId);
+		RunCommonConfig runCommonConfig = ZmsPortalApi.getInstance().runCommon(processId);
 		SupervisordConfigAssemble supervisordConfigAssemble = processConfigAssemble.assemble(runCommonConfig);
 		//supervisor配置目录
 		String supervisorDir = System.getProperty(SUPERVISOR_DIR);

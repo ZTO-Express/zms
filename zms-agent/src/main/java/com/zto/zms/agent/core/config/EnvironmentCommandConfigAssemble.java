@@ -14,11 +14,11 @@
 
 package com.zto.zms.agent.core.config;
 
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 import com.zto.zms.writer.IniFileWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -46,7 +46,7 @@ public class EnvironmentCommandConfigAssemble implements CommandConfigAssemble {
 
 	public EnvironmentCommandConfigAssemble addAllEnvironment(Map<String,String> environmentMap){
 		logger.info("---------environmentMap"+environmentMap);
-		if(CollectionUtils.isEmpty(environmentMap)){
+		if(environmentMap==null||environmentMap.size()<=0){
 			return this;
 		}
 		this.environmentMap.putAll(environmentMap);

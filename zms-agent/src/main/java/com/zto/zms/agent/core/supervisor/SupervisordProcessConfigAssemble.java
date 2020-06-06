@@ -20,8 +20,6 @@ import com.zto.zms.agent.core.config.ExecuteCommandConfigAssemble;
 import com.zto.zms.agent.core.config.LogCommandConfigAssemble;
 import com.zto.zms.agent.core.config.ProcessCheckCommandConfigAssemble;
 import com.zto.zms.agent.core.constant.EnvironmentOptConstant;
-import org.springframework.stereotype.Component;
-
 import java.text.MessageFormat;
 
 import static com.zto.zms.agent.core.constant.EnvironmentOptConstant.CONF_DIR;
@@ -32,7 +30,6 @@ import static com.zto.zms.agent.core.constant.EnvironmentOptConstant.CONF_DIR;
  * @author lidawei
  * @date 2020/3/11
  **/
-@Component
 public class SupervisordProcessConfigAssemble implements ProcessConfigAssemble {
 	@Override
 	public SupervisordConfigAssemble assemble(RunCommonConfig runCommonConfig) throws Exception {

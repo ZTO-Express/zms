@@ -17,8 +17,6 @@ package com.zto.zms.agent.web.util;
 import com.zto.zms.agent.web.dto.HostMonitorDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import java.io.*;
 import java.text.DecimalFormat;
 import java.util.StringTokenizer;
@@ -27,7 +25,6 @@ import java.util.StringTokenizer;
  * @author yuhao.zhang
  * @date 2020/3/26
  */
-@Component
 public class SysOperationUtil {
 
     public static final Logger logger = LoggerFactory.getLogger(SysOperationUtil.class);
@@ -107,7 +104,7 @@ public class SysOperationUtil {
         return (float)((user2 + sys2 + nice2) - (user1 + sys1 + nice1)) / (float)((user2 + nice2 + sys2 + idle2) - (user1 + nice1 + sys1 + idle1));
     }
 
-    public HostMonitorDTO getHostInfo() throws IOException, InterruptedException {
+    public static HostMonitorDTO getHostInfo() throws IOException, InterruptedException {
         int[] memInfo = SysOperationUtil.getMemInfo();
         HostMonitorDTO hostMonitorDTO = new HostMonitorDTO();
         logger.debug("MemTotal：" + memInfo[0]);

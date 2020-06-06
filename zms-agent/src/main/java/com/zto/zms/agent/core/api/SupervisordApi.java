@@ -24,7 +24,6 @@ import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,7 +38,6 @@ import static com.zto.zms.common.ZmsException.SUPERVISORD_INITIALIZATION_EXCEPTI
  * @author lidawei
  * @date 2020/2/28
  **/
-@Component
 public class SupervisordApi {
 
 	public static final Logger logger = LoggerFactory.getLogger(SupervisordApi.class);

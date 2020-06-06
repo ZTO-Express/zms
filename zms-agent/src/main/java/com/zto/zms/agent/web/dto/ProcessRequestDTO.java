@@ -14,8 +14,6 @@
 
 package com.zto.zms.agent.web.dto;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * <p>Description: </p>
  *

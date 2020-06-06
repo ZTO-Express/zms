@@ -26,9 +26,7 @@ import com.zto.zms.common.ServiceProcess;
 import com.zto.zms.agent.web.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
@@ -42,7 +40,6 @@ import static com.zto.zms.agent.core.constant.EnvironmentOptConstant.PROCESS_DIR
  * @author lidawei
  * @date 2020/2/28
  **/
-@Service
 public class ZmsPortalApi {
 	private static Logger logger = LoggerFactory.getLogger(ZmsPortalApi.class);
 
@@ -60,7 +57,18 @@ public class ZmsPortalApi {
 
 	private String processDir = System.getProperty(PROCESS_DIR);
 
-	@PostConstruct
+	private static final ZmsPortalApi instance;
+	static {
+		instance = new ZmsPortalApi();
+		instance.init();
+	}
+
+	public static ZmsPortalApi getInstance() {
+		return instance;
+	}
+
+	private ZmsPortalApi(){}
+
 	public void init() {
 		uploadConfigFileUrl = System.getProperty(ZMS_PORTAL) + uploadConfigFileUrl;
 		environmentConfig = System.getProperty(ZMS_PORTAL) + environmentConfig;
