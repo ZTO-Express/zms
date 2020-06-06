@@ -67,9 +67,10 @@ public class AgentServer extends ChannelInitializer<SocketChannel> {
 
 	}
 	public static void main(String[] args) throws Exception {
+		int port = Integer.parseInt(System.getProperty("server.port","18080"));
 		ServiceMonitorTask task = new ServiceMonitorTask();
 		task.start();
-		AgentServer server = new AgentServer(8080);
+		AgentServer server = new AgentServer(port);
 		server.start();
 	}
 }
