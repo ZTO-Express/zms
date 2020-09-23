@@ -97,7 +97,7 @@ public class KafkaServiceInstanceListenerImpl implements ServiceInstanceListener
         ZmsServiceEntity zmsService = zmsServiceMapper.getById(serviceId);
         ZmsContextManager.setEnv(zmsService.getEnvironmentId());
         //服务进程信息
-        Integer processId = serviceProcessMapper.listRunningProcessByInstance(serviceId).getId();
+        Integer processId = serviceProcessMapper.listRunningProcessByInstance(serviceInstance.getId()).getId();
         //当前集群元数据
         ClusterMetadata currentClusterMetadata = assembleClusterDto(zmsService, processId);
         //元数据变更
