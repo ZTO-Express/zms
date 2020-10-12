@@ -66,6 +66,8 @@ public class ZmsException extends RuntimeException {
 
 	public static final ZmsException SIGNATURE_VERIFICATION_EXCEPTION = new ZmsException("Signature verification exception", 2000);
 
+	public static final ZmsException KAFKA_CONSUMER_START_FAILURE = new ZmsException("kafka consumer start failure", 2001);
+
 	private int code;
 
 	public ZmsException(String message, int code) {

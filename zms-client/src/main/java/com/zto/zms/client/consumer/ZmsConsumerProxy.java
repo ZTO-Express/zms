@@ -60,7 +60,7 @@ public abstract class ZmsConsumerProxy extends ZmsProxy<ZmsConsumerMetrics> impl
         consumerStart();
         super.start();
         register(listener);
-        logger.info("ConsumerProxy startd at {}", System.currentTimeMillis());
+        logger.info("ConsumerProxy started at {}, consumer group name:{}", System.currentTimeMillis(), metadata.getName());
 
     }
 

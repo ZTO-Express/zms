@@ -16,14 +16,20 @@ package com.zto.zms.client.consumer;
 
 import com.google.common.collect.Lists;
 import com.zto.zms.client.common.ConsumeFromWhere;
-import com.zto.zms.common.ZmsConst;
 import com.zto.zms.client.config.ConsumerConfig;
+import com.zto.zms.common.ZmsConst;
+import com.zto.zms.common.ZmsException;
 import com.zto.zms.logger.ZmsLogger;
 import com.zto.zms.metadata.ConsumerGroupMetadata;
 import com.zto.zms.metadata.ZmsMetadata;
 import com.zto.zms.utils.ExecutorServiceUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.clients.consumer.OffsetCommitCallback;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.slf4j.Logger;
@@ -31,9 +37,25 @@ import org.springside.modules.utils.net.NetUtil;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Created by superheizai on 2017/8/15.
@@ -55,7 +77,7 @@ public class KafkaConsumerProxy extends ZmsConsumerProxy {
 
     private void addOffset(ConsumerRecord record) {
         this.offsets.computeIfAbsent(record.topic(), v -> new ConcurrentHashMap<>())
-                .compute(record.partition(), (k, v) -> v == null ? record.offset() : Math.max(v, record.offset()));
+            .compute(record.partition(), (k, v) -> v == null ? record.offset() : Math.max(v, record.offset()));
     }
 
 
@@ -136,13 +158,18 @@ public class KafkaConsumerProxy extends ZmsConsumerProxy {
     public void register(MessageListener listener) {
 
         String threadName = "ZmsKafkaPollThread-" + metadata.getName() + "-" + instanceName + LocalDateTime.now();
+
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        final AtomicReference<Throwable> err = new AtomicReference<>();
         Thread zmsPullThread = new Thread(() -> {
 
             try {
                 while (running) {
-                    ConsumerRecords records = null;
-                    records = consumer.poll(Duration.ofMillis(3000));
-                    logger.debug("messaged pulled at {} for topic {} ", System.currentTimeMillis(), ((ConsumerGroupMetadata) metadata).getBindingTopic());
+                    ConsumerRecords records = consumer.poll(Duration.ofMillis(3000));
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("messaged pulled at {} for topic {} ",
+                            System.currentTimeMillis(), ((ConsumerGroupMetadata) metadata).getBindingTopic());
+                    }
                     if (listener instanceof KafkaBatchMsgListener) {
                         KafkaBatchMsgListener batchMsgListener = (KafkaBatchMsgListener) listener;
                         submitBatchRecords(records, batchMsgListener);
@@ -150,19 +177,40 @@ public class KafkaConsumerProxy extends ZmsConsumerProxy {
                         submitRecords(records, listener);
                     }
                     commitOffsets();
+                    if (countDownLatch.getCount() >= 1) {
+                        countDownLatch.countDown();
+                    }
                 }
             } catch (WakeupException ex) {
                 logger.info("consumer poll wakeup", ex.getMessage());
+                err.set(ex);
             } catch (Exception ex) {
                 logger.error("consume poll error", ex);
+                err.set(ex);
+            } catch (Throwable throwable) {
+                err.set(throwable);
             } finally {
+                if (countDownLatch.getCount() >= 1) {
+                    countDownLatch.countDown();
+                }
+                super.setRunning(false);
                 consumerShutdown();
             }
         }, threadName);
         zmsPullThread.setUncaughtExceptionHandler((t, e) -> logger.error("{} thread get a exception ", threadName, e));
         zmsPullThread.start();
 
-
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            logger.error("CountDownLatch InterruptedException", e);
+            throw ZmsException.KAFKA_CONSUMER_START_FAILURE;
+        }
+        if (err.get() != null) {
+            logger.error(err.get().getMessage(), err.get());
+            throw new ZmsException(ZmsException.KAFKA_CONSUMER_START_FAILURE.getMessage() + ":"
+                + err.get().getMessage(), ZmsException.KAFKA_CONSUMER_START_FAILURE.getCode());
+        }
     }
 
     private synchronized void commitOffsets() {
@@ -189,7 +237,7 @@ public class KafkaConsumerProxy extends ZmsConsumerProxy {
         for (Map.Entry<String, Map<Integer, Long>> entry : this.offsets.entrySet()) {
             for (Map.Entry<Integer, Long> offset : entry.getValue().entrySet()) {
                 commits.put(new TopicPartition(entry.getKey(), offset.getKey()),
-                        new OffsetAndMetadata(offset.getValue() + 1));
+                    new OffsetAndMetadata(offset.getValue() + 1));
             }
         }
         this.offsets.clear();

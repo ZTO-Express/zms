@@ -125,6 +125,16 @@
                 <role>Developer</role>
             </roles>
         </developer>
+        <developer>
+            <id>objcoding</id>
+            <name>Zhang Cheng Hui</name>
+            <email>zhangchenghui.dev@gmail.com</email>
+            <organization>ZTO</organization>
+            <organizationUrl>https://www.zto.com</organizationUrl>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
     </developers>
     <modules>
         <module>zms-common</module>
