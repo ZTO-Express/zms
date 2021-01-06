@@ -12,7 +12,7 @@
     "memory": "node --max_old_space_size=1024 node_modules/@vue/cli-service/bin/vue-cli-service.js serve --open"
   },
   "dependencies": {
-    "axios": "0.19.0",
+    "axios": "0.21.1",
     "core-js": "3.4.2",
     "echarts": "^4.1.0",
     "element-ui": "^2.13.1",
