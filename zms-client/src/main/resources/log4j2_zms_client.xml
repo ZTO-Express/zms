@@ -44,14 +44,14 @@
 
 	</Appenders>
 	<Loggers>
-		<Logger name="zms_logger" level="${zms.client.logging.level}" additivity="false">
+		<Logger name="zms_logger" level="${zms.client.logging.level:-info}" additivity="false">
 			<appender-ref ref="ZmsClientAppender" />
 		</Logger>
-		<Logger name="zms_statistic_logger" level="${zms.client.logging.level}" additivity="false">
+		<Logger name="zms_statistic_logger" level="${zms.client.logging.level:-info}" additivity="false">
 			<appender-ref ref="ZmsStatisticInfoAppender" />
 		</Logger>
 
-		<Logger name="org.apache.kafka" level="${zms.client.logging.level}" additivity="false">
+		<Logger name="org.apache.kafka" level="${zms.client.logging.level:-info}" additivity="false">
 			<appender-ref ref="KafkaInfoAppender"/>
 		</Logger>
 

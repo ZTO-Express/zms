@@ -77,15 +77,15 @@
         </encoder>
     </appender>
     <logger name="zms_logger" additivity="false">
-        <level value="${zms.client.logLevel}"/>
+        <level value="${zms.client.logging.level:-info}"/>
         <appender-ref ref="ZmsClientAppender"/>
     </logger>
     <logger name="zms_statistic_logger" additivity="false">
-        <level value="${zms.client.logLevel}"/>
+        <level value="${zms.client.logging.level:-info}"/>
         <appender-ref ref="ZmsStatisticInfoAppender"/>
     </logger>
     <logger name="org.apache.kafka" additivity="false">
-        <level value="${zms.client.logLevel}"/>
+        <level value="${zms.client.logging.level:-info}"/>
         <appender-ref ref="KafkaInfoAppender"/>
     </logger>
 </configuration>
